@@ -1,0 +1,1212 @@
+FFF	Text	ASCII text
+FFE	Command	CLI Commands
+FFD	Data	Arbitrary data
+FFC	Utility	Transient program
+FFB	BASIC	Tokenised BASIC program
+FFA	Module	Relocatable code module
+FF9	Sprite	Picture or saved screen
+FF8	Absolute	Absolute ARM code, (loaded at &8000)
+FF7	BBC font	BBC font, (VDU code sequence)
+FF6	Font	Outline font, 1bpp or 4bpp bitmap
+FF5	PoScript	PostScript
+FF4	Printout	Dot-matrix printout
+FF3	LaserJet	HP LaserJet print data (PCL)
+FF2	Config	240 byte CMOS RAM configuration
+FF1	RawData	Raw unprocessed data
+FF0	TIFF	Tagged Image File Format picture
+FEF	Diary	Arthur desktop diary
+FEE	NotePad	Arthur desktop notepad
+FED	Palette	Desktop palette
+FEC	Template	Window templates
+FEB	Obey	CLI commands
+FEA	Desktop	Desktop setup
+FE9	ViewWord	View word processor
+FE8	ViewPS	View word processor
+FE7	ViewSht	ViewSheet spreadsheet
+FE6	UNIX Ex	
+FE5	ROM	OS softload image (or EPROM)
+FE4	DOS	IBM PC disc file
+FE3	Atari	Atari ST disc file (or ST)
+FE2	Amiga	Commodore Amiga disc file (or CBM)
+FE1	Makefile	DDE Make Makefile
+FE0	Accessry	Arthur desktop accessory (obsolete)
+FDF	VTScript	TCP/IP
+FDE	VTSetup	TCP/IP
+FDD	MasterUt	BBC Master utilities
+FDC	SoftLink	
+FDB	TextCRLF	
+FDA	MSDOSbat	Windows batch file
+FD9	MSDOSexe	Windows executable
+FD8	MSDOScom	Windows command file
+FD7	TaskObey	*Obey in a TaskWindow
+FD6	TaskExec	*Exec in a TaskWindow
+FD5	Pict	Macintosh Pict metafile
+FD4	MIDI	Musical Instrument Digital Interface
+FD3	DebImage	DDE Debug file
+FD2	ScrDiff	
+FD1	BASICTxt	DeskEdit Basic program in text form
+FD0	PCConfig	PC Emulator configuration
+FCF	Cache	FontCache
+FCE	Floppy	Filecore floppy disc image
+FCD	HardDisc	Filecore hard disc image
+FCC	Device	Device
+FCA	Squash	Compressed file
+FC9	SunRastr	Sun Microsystems raster file
+FC8	DOSDisc	DOS Disc
+FC7	MacType1	Mac format PostScript Type1 font
+FC6	PrintDfn	Printer definition
+FC3	Patch	Risc OS 3 Patch
+FC2	AIFF	Audio IFF
+FC0	Link	Symbolic link
+FBE	PBCards	PocketFS
+FBD	PBWrite	PocketFS
+FBC	PBAbacus	PocketFS
+FB5	NoDisc	Acorn Access
+FB4	DiscR	Acorn Access
+FB2	MovieFS	Video
+FB1	WAV	Sound sample, many sub-formats
+FB0	Allocate	RISC OS name allocation request
+FAF	HTML	Hypertext markup language
+FAE	Resource	Toolbox UI definition
+FAC	HCL	HyperCard Language
+FAB	KnowBase	Expert system
+FAA	STimage	Smalltalk image/snapshot file
+FAA	UtlLabel	Unused?
+FA8	EasyData	
+FA2	HomeWrks	
+F9F	DiscD	Acorn Access
+F9E	DiscDP	Acorn Access
+F9D	DiscCD	Acorn Access
+F98	PhotoShp	Adobe Photoshop picture
+F95	Code	Parallel of Data (FFD)
+F91	URI	Uniform Resource Indicator
+F89	GZip	Gzip, (GNU Zip)
+F88	RealAud	Real compressed audio
+F83	MNG	Motion Network Graphics animation
+F81	JSScript	JavaScript
+F80	XML	eXtended Markup Language files
+F7C	Teletext	Teletext screen data
+F7B	Obey26	26-bit only Obey file
+F7A	Basic26	26-bit only BASIC file
+F79	CSS	Cascading Style Sheet
+F78	JNG	Joint Network Graphics picture
+F77	Squarc	Archive
+F76	EDID	Binary EDID dump
+F75	JSON	JavaScript Object Notation file
+F74	YAML	YAML Ain’t Markup Language file
+F1B	65Host	Usually a Basic program
+F19	BasicII	BBC Basic from BBC Micro
+F12	BasicNt	BBC Basic from MasterET
+F0E	EconetUt	BBC Econet Utility
+F0E	BasicIV	BBC Basic from Master128
+F09	WiniUtil	BBC Winchester Utility
+EEB	TinyDraw	
+EEB	ScrnTurt	ScreenTurtle logo definitions
+EEA	TinyLogo	
+EEA	ScrnTurt	ScreenTurtle compressed screens
+ED1	EdSProg	Script for EdScheme: Scheme + turtle graphics + editor
+ED1	ComSound	Com sound
+ED0	RawSound	Raw sound sample
+ED0	DSEdSmpl	Raw sound sample
+ECF	ECFData	Pro-Artisan extended colour fill
+ECD	TeleSoft	
+ECB	PCBFile	
+E92	DiscIndx	
+E1F	ELF	ELF format executable
+E13	Drummer	The Drummer
+DFF	Logistix	Logistix data
+DFE	CSV	Comma separated value spreadsheet
+DFD	DIF	
+DFC	LogoExt	Logo extensions
+DFB	LookUp	Watford Video Digitiser lookup
+DFA	Picture	Watford Video Digitiser picture
+DF9	Waveform	SoundSynth waveform
+DF9	SndSynth	Sound (not official?)
+DF6	CDImage	CD ROM image
+DF6	ISOImage	CDROM image
+DF2	DFSDisc	BBC Micro floppy image
+DF0	Font	AMS Finesse Paint
+DEF	Pattern	AMS Finesse Paint
+DEE	Canvas	AMS Finesse Paint
+DED	Finesse	AMS Finesse Paint
+DED	Recycled	Discarded file
+DEC	SLD	AutoSketch
+DEC	DiscRec	Disc Record
+DEB	PLT	AutoSketch
+DEA	DXF	Data eXchange Format, AutoSketch, AutoCAD
+DE9	SKD	AutoSketch SKD
+DE8	SD+Data	System Delta Plus data
+DE7	SD+Form	System Delta Plus form
+DE6	SG+Graph	System Gamma graph
+DE5	SG+Macro	System Gamma macro
+DE4	Sheet	System Sigma spreadsheet
+DE3	SSMacro	System Sigma macro
+DE2	ProArt	Pro-Artisan compressed screen
+DE2	XarcPic	compressed picture
+DE1	Euclid	Euclid 3D object
+DE0	Sibelius	Sibelius info
+DDF	Logistix	
+DDF	Genesis	Sibelius music
+DDF	Disk manager index	
+DDE	PDream	PipeDream document
+DDD	Wilson	unused
+DDD	GhostDir	Symbolic link
+DDC	Archive	Compressed archive
+DDB	MapData	MapData
+DDA	ColSet	Pro-Artisan colour set
+DD9	MagicPen	Pro-Artisan magic brush
+DD8	ProFont	Pro-Artisan font
+DD7	Bezier	Pro-Artisan bezier curves
+DD6	PAX	PAX art package
+DD5	HD Log	Hard disc archiver backup log
+DD4	HDArch	Hard disc archiver
+DD3	Prisma3	Prisma3
+DD2	PlutoFnt	Pluto font
+DD1	PlutoFIF	Pluto font info
+DD0	BNI_Data	Monitor system
+DCF	Song	
+DCE	Pattern	
+DCD	Track	
+DCC	Arrange	
+DCB	VoiceSet	Studio24+ DrumList/MidiList/ClipList
+DCA	Conductr	Studio24+ graphics
+DC9	ClipBord	Studio24+
+DC8	Song	
+DC8	Graphic	
+DC7	Rhythm	
+DC6	Score	Studio24+ clipboard
+DC5	ScnMusic	Studio24+ conductor
+DC4	VidData	Studio24+ voice set
+DC3	Overlays	Studio24+ arrangement
+DC2	NMEs	Studio24+ track
+DC1	Text	Studio24+ pattern
+DC0	MDMMusic	Studio24+ song
+DB8	DataKing	
+DB7	Squirrel	Squirrel data
+DB6	DToBase	Desktop Office
+DB5	DataVision	Silcon Vision DataVision
+DB4	SuperCalc3	
+DB3	DBaseIII	DBase III database
+DB2	DBaseII	DBase II database
+DB1	DBaseInd	DBase index database
+DB0	Lotus123	Lotus 1-2-3 spreadsheet
+DAF	VPalette	
+DAF	Sound	Armadillo Sound Sample
+DAF	Magpie?	Magpie music
+DAE	Fourier?	FourierTrns Fourier transform
+DAE	HNCode	Armadillo HighNote module
+DAD	HNData	Armadillo HighNote sound
+DAC	HNConfig	Armadillo HighNote config
+DA0	VPScript	
+D98	PackFile	Archive
+D97	Address	Address book
+D96	CFSlzw	!CFS compressed file
+D95	ArtWkMod	Artworks extension
+D94	Artworks	Drawing
+D93	DDF	Impression Document Description Format
+D92	Screen	LaserDirect halftone screen
+D91	Equasor	Equasor equations
+D90	DataBase	
+D90	FaxExec	unused
+D8F	CCRTF	unused
+D8E	ABIDefs	Application Binary Interface UI definitions
+D8D	LDirect	Laser Direct printer file
+D8C	GreyMap	unused
+D8B	Abbrev	Spell checker abreviation dictionary
+D8A	Excep’ns	Spell checker exception dictionary
+D89	IModule	Impression Imodule
+D88	Stories	Impression stories
+D87	DocData	Impression document data
+D86	CCcolour	unused
+D85	FaxImage	CC FaxPack picture
+D84	Diction	Impression Junior spelling dictionary
+D83	Ignore	Impression II/Impression Junior ignore list
+D82	IChart	InterChart chart
+D81	ISheet	InterSheet spreadsheet
+D80	IWord	InterWord word processor document
+D7F	ComSprit	Atelier compacted sprite
+D7E	MinBrush	Atelier user-defined brush
+D7D	MinAnim	Atelier animation sequence
+D7C	HomeAcct	Home accounts
+D7B	DeltaSet	System Delta Plus MultiStore setup
+D7A	Min3DObj	3-D object
+D79	Min24Bit	24-bit screen
+D78	FamTree	Family tree
+D77	FamTreeA	Family tree ancillary
+D76	MitDiary	Diary
+D76	MitDiary	
+D75	MitProje	Project
+D74	TypeFile	
+D74	MitBakup	DiscTree backup
+D73	MitBScpt	DiscTree backup script
+D72	ForthSrc	Forth source
+D71	ForthDat	Forth
+D70	PlutoPal	Pluto palette
+D6F	PlBBCFnt	Pluto BBC font
+D6E	PlBBCFIF	Pluto BBC font info
+D6D	PlBBCPic	Pluto old RLE picture
+D6C	PlDesPic	Pluto designer picture
+D6B	PlComScr	Pluto compressed screen
+D6A	AceFilm	Projector/Euclid compressed screen image sequence
+D69	M3Spread	Matrix3 spreadsheet
+D68	M3Exec	Matrix3 executable
+D67	M3Conf	Matrix3 configuration
+D66	Viewdata	Hearsay Viewdata frame
+D66	ViewData	
+D66	PAX picture	
+D65	HSStatus	Hearsay status
+D64	HSTelDir	Hearsay telephone directory
+D63	HSSetup	Hearsay setup
+D62	BNI_sp	ElectroPhysical Workstation single-precision data
+D61	BNI_dp	ElectroPhysical Workstation double-precision data
+D60	BNI_sd	ElectroPhysical Workstation standard deviation data
+D5F	BNI_pd	ElectroPhysical Workstation patient data
+D5E	BNI_mes	ElectroPhysical Workstation derived measures
+D5D	BNI_map	ElectroPhysical Workstation topographic map
+D5C	BNI_plot	ElectroPhysical Workstation plotter defaults
+D5B	BNI_defm	ElectroPhysical Workstation default measures
+D5A	BNI_grap	ElectroPhysical Workstation stored graph
+D59	RendScen	RenderBender scene description
+D58	RendPic	RenderBender compressed pictures
+D57	RendAnim	RenderBender/!Translatr animation
+D56	ING	Interactive Network Graphics
+D55	HyperTxt	Hypertext
+D54	TimeTabl	Timetable control
+D53	TTData	Timetable support
+D52	ISOCObj	ISO C AOF object code
+D51	ISOCLib	ISO C library
+D50	ISOCDbug	ISO C debug
+D4F	Colours	Virtual Palettes
+D4E	Archive	Tape Archiver
+D4D	Archway	Archway DIY programming suite
+D4C	SprScan	
+D4B	DigiSim	
+D4A	APL	I-APL
+D49	Book	HyperBook book
+D48	Notes	HyperBook notes
+D47	Index	HyperBook indexes
+D46	Glossary	HyperBook glossaries
+D45	Vocablry	HyperBook/Numerator vocabularies
+D44	Numrator	Numerator workspaces
+D43	Modules	Numerator modules
+D42	InData	Numerator input
+D41	WordList	
+D41	OutData	Numerator output
+D41	List	PenDown word list
+D40	PDDoc	PenDown
+D40	Help	Numerator help
+D3F	FSPaths	Instigator
+D3E	FNKeys	Instigator
+D3D	OSVars	Instigator
+D3C	Sample	!Armadeus, (registered as armSamps")"
+D3C	Armadeus	Sound sample
+D3C	LinSignd	
+D3B	Song	Music track containing sample + loop points
+D3A	Patterns	Atelier patterns
+D39	Formulae	Atelier formulae
+D38	Screen	
+D37	Compress	
+D36	Captured	
+D35	Sheet	
+D34	MacroLib	
+D33	Profile3	HearSay/ArcComm Videotex profile 3, (Prestel) frame store
+D32	Profile2	HearSay/ArcComm Videotex profile 2, (Tltel) frame store
+D31	Profile1	ArcComm Videotex profile 1, (Bildschirmtext) frame store
+D30	DToComms	DesktopOffice
+D30	CommProc	ArcComm procedure,(text)
+D2F	CommMail	ArcComm mailbox text,(binary)
+D2E	Presentr	Presenter
+D2D	DOSFile	
+D2C	ARMInst	
+D2B	AtelSeq	Atelier sequence
+D2A	Magazine	
+D29	Proman	
+D28	GIPAL	
+D27	GIData	
+D26	PremDoc	Premier document
+D26	KML	Route data e.g. GPS
+D25	PremCmd	Premier command
+D24	PremData	Premier
+D23	Lisp	
+D22	LispText	
+D21	PDCmdFil	PipeDream macro (commands)
+D20	APECImag	APEC ROM image
+D1F	PALData	PAL programmer fuse image
+D1E	DiscDump	Investigator2 dump
+D1D	Labels	LabelMaster+
+D1C	ArcScan	ArcScan bibliographic database
+D1B	Frame	
+D1A	Tformat	!Titler
+D1A	Grid	
+D19	Menu	!Menu Waiter
+D18	Quest	Quest
+D17	CmunITel	CommunITelFrame
+D16	Mode7	1K mode 7 screen image
+D15	MitLnkDf	Front linker driver
+D14	MitMak	CFront MakeFile
+D13	Batch	
+D12	DBRiscOS	
+D11	Pointers	
+D10	SatPict	
+D0C	1WPDict	First Word Plus spelling dictionary
+D0B	1WPCfg	First Word Plus printer configuration
+D09	Action	Tween action
+D08	Genesis	Genesis script
+D07	Genesis	Genesis button
+D01	EasiDoc	EasiWriter
+D00	EasiPad	EasiWriter
+CFF	CFF Font	Compact Font Format font
+CFF	EasiDict	EasiWriter
+CF9	TWScript	TwEdit
+CF8	Alps	ALPS (Alpine Software)
+CF7	Schema	CadMust PCB Schematic
+CF6	PCB	CadMust PCB
+CF3	Standings	Chequered Flag
+CF2	Circuit	Chequered Flag
+CF1	Champ’s	Chequered Flag
+CF0	Standings	Chequered Flag
+CED	WCADFile	Worra CAD
+CEB	KiddiCAD	Kiddi CAD
+CEA	WorraCAD	Worra CAD
+CE9	KeyAuth	Key Plus
+CE8	KeyFile	Key Plus
+CE7	KeyCalc	Key Plus
+CE6	KeyMap	Key Plus
+CE5	TeX	TeX source
+CE4	DVI	DVI, (TeX) output
+CE2	Tripfile	
+CDD	Ovation	Ovation DTP document
+CDC	OvnStyle	Ovation DTP style sheet
+CD5	Tabs	
+CD3	SolidCAD	Silicon Vision’s Solid CAD
+CD3	Quick Art / High Art	
+CD2	TripFile	
+CD2	FilmPath	
+CCF	LotusPic	Lotus picture
+CCD	WaveLength	
+CCC	MayJong	
+CCC	DietSprite	
+CC7	DToWord	DesktopOffice
+CC6	DToSheet	DesktopOffice wordprocessor
+CC5	TeqMusic	Music track. Same format as &701
+CC3	Poster	Poster File
+CC2	SnapShot	SnapShot colour digitiser, (enhanced?) image
+CC1	Image	ArcImage
+CBF	Or_Setup	!Orrery
+CBA	Karma	!Karma saved game
+CB9	Perform	
+CB8	CashWide	
+CB8	7Script	ArcTerm7 command script
+CB7	7BatCfg	ArcTerm7 batch or configuration
+CB6	STModule	Sound Tracker music sequence and samples
+CB6	ArcTrack	
+CB5	STSample	STracker SoundTracker sample
+CB4	Cash Nar	
+CB4	C64_Musi	C64 music track
+CB2	PDTMovie	Parametric Design Tool movie
+CB1	PDT Snap	Parametric Design Tool picture
+CB0	PDT Cfg	Parametric Design Tool configuration
+CAF	IGES	Industry standard graphics
+CAE	HPGLPlot	Hewlett-Packard Graphics Language drawing
+CAD	PDT Dwg	Parametric Design Tool drawing
+CAC	Document	Dekstop Folio document
+CAB	Paper	Desktop Folio paper
+CA7	Concept	
+CA6	Vector	Illusionist Vector
+CA5	Sweep	Illusionist Sweep
+CA3	PK	TeX font bitmaps (compressed)
+CA2	GF	TeX font bitmaps (uncompressed)
+CA1	TFM	TeX font metrics
+CA0	Metafont	Metafont source
+C99	Binder	Magpie Binder
+C8B	JoyStick	Joystick
+C8A	Palette+	PCATs Palette Plus
+C89	Personal accounts	
+C88	Prophile	Prophet accounts file
+C88	AldeComm	Aldebaran (Evolution Trading)
+C87	Personal Accounts	
+C87	Invoice	Prophet invoice file
+C87	EliteCom	!Elite commander saved game
+C86	OCRData	
+C85	JPEG	JPEG compressed picture
+C84	Overlay	
+C83	CKOver	
+C82	Sequence	
+C7F	Titler	
+C7E	Database	
+C7D	SID	Spreadsheet Interchange Data
+C7B	PhoneNum	!Grapevine phone number database including terminal type & key definitions
+C7A	LcadDRAW	!LinCAD
+C76	Squashed	
+C75	Sound	
+C74	AlpMusic	
+C74	Sound	ExSound
+C73	RawMusic	ALPS
+C70	LcadBLOCK	!LinCAD
+C6D	Pinpoint?	Pinpoint
+C6C	PinPoint	Pinpoint
+C6B	NootBook	!Noot animation workbook
+C6A	smArt	
+C62	DeskEdit	DeskEdit printer options
+C5A	Master	Modified Replay video and audio
+C59	Log	Text file describing edited video and audio segments
+C58	Ideas	
+C57	Notate	Notate music
+C56	VecFile	Vector
+C55	DrumSeq	Drum sequence
+C4E	GTi	
+C4D	Battle	Dreadnoughts save game
+C4B	CmprDraw	Compressed draw file (or DrwC)
+C48	MIDITrck	Related to FD4?
+C46	Tar	Unix tape archive
+C46	MIDITrak?	MIDIJuke
+C43	ChartOpt	ChartWell ChartOpt File
+C3C	Shape	
+C3B	FST	
+C37	EurSheet	Eureka spreadsheet
+C36	SFXSheet	
+C35	CorlDraw	Corel Draw drawing
+C33	CADfile	
+C32	RTF	Rich Text Format
+C2E	EurMacro	!Eureka
+C2D	EurChart	!Eureka
+C2A	IotaFilm	Video
+C2A	SignGfx	
+C29	HelpBook	
+C29	DP tmplt	DataPower template
+C28	Graph	DataPower graph
+C27	Database	DataPower database
+C26	ASheet	
+C25	AWord	
+C24	Architech	
+C23	Plot	
+C21	WX-Task	!WeatherDX
+C1F	HoledOut	Holed Out golf game
+C1E	FwkzCmd	Fireworkz commands
+C1D	FwrkzTem	Fireworkz template
+C1C	Wordz	Fireworkz (word processing)
+C1B	KOPoint	
+C1A	Subject	
+C19	Stencil	Talking Pictures, The Spoken Word
+C14	S-Data	!S-base database
+C13	ANGLDATA	
+C10	APAPos	
+C0F	BookPos	
+C0D	Molecule	!Modeller
+C0C	SMacro	
+C05	Ultra	Ultra Tracker music track
+C04	ImpTrack	Impulse Tracker music track
+C03	FastTrak	Fast Tracker music track
+C02	ScrmTrak	Scream Tracker music track
+C01	Central heating calculator	
+C00	Rhapsody	Rhapsody score
+BFF	Map	
+BF8	MPEG	MPEG video
+BF7	RIFF	General RIFF – chunked IBM PC multimedia format
+BEE	Splosh	
+BED	FontDisc	
+BE9	SWorkSp	
+BE8	PhotoCD	PhotoCD multiresolution picture
+BE8	DAsPict	
+BE1	Resultz	Fireworkz (spreadsheet)
+BE0	Recordz	Fireworkz Pro database container
+BDF	Firewrkz	Fireworkz document
+BDA	Disc	Acorn Access+
+BD9	DiscP	Acorn Access+
+BD8	MacForks	Mac HFS forked file
+BD7	HyprDict	Help document
+BD6	Audiowrk	Sound sample
+BD5	Envelope	
+BD1	Rephorm	
+BD0	PhotoBase	
+BCF	TblMate	
+BCB	Lexicon	
+BC9	PrimeSlv	
+BC5	ImpDoc	Impression single file document
+BC4	PremGame	Premier Manager (Gremlin Graphics)
+BC2	PresMgrIm	IBM OS2 Presentation Manager image
+BBD	RevBAS	Use 1C7 for BBCBasic(86) and BBCBasic(80)
+BBD	CheatData	
+BBD	BBC Data	BBC Micro datafile
+BBC	BBC ROM	BBC micro ROM
+BB1	PhotoBase	
+BB0	BibleNts	
+BAF	MacDisc	Mac HFS disc image
+BA6	Excel	Excel Spreadsheet
+BA1	SNA	!Z80Em ZX Spectrum emulator snapshot
+BA0	Z80	!Z80Em ZX Spectrum emulator snapshot
+B9F	FLI	Video (also 301)
+B9E	Verstile	Tiling drawfile
+B9B	DBasic	
+B9A	DBasLib	
+B95	WimpBasic	WimpBasic design files
+B8C	Split	Part of a multi-part file
+B8B	TextEase	TextEase document
+B8A	TxtEaseT	TextEase document template
+B80	Slthzone	
+B7D	TableCalc	
+B7C	LifeForm	MacroLife Lifeform
+B7B	Life	MacroLife Life plane
+B78	MIDIWrks	MidiWorks score
+B72	Compo	
+B72	Gamma	Gamma correction data
+B6F	WTModule	Wacky-Talky module
+B6E	AddrList	Desktop Hacker address list
+B6A	Illusion	Illusions Disk Magazine
+B69	MMaker	Music Maker 1 music file
+B64	C64_Info	C64 music info
+B62	Gopher	Gopher command
+B61	XBitMap	X window bitmap image
+B60	PNG	Portable Network Graphics image
+B5C	3DModel	!TopModel object
+B59	Page	Bookmaker page file
+B57	MyBook	Bookmaker book file
+B56	BubStyle	Bubble Help style
+B54	SOS	
+B50	RGSCOpts	Choices for Picture Book 2 etc
+B4F	Alphabet	Picture Book 2 Alphabet
+B3D	PagesTmp	TextEase
+B3C	Pages	TextEase pages
+B3B	SpellBnk	!Spellbank user dictionary
+B3A	SpellFrq	Words which have been looked up in !Spellbank
+B31	FuzzySht?	FuzzySheet
+B30	FuzzySht	FuzzySheet
+B2F	WinMeta	WMF
+B2E	CorelXch	Corel Exchange drawing
+B2D	AdobeIll	Adobe Illustrator drawing
+B2C	OS2Met	OS2 Metafile
+B2B	CGMeta	CGM image
+B2A	DaVinci	
+B29	VRML	Virtual Reality Modeling Language
+B28	URL	Uniform Resource Locator
+B27	OvnPro	Ovation Pro document
+B26	OVPStyle	Ovation Pro style sheet
+B25	OVPDDL	Ovation Pro document description
+B24	OVPScrpt	Ovation Pro script
+B23	X-File	Directory image
+B22	DFSImage	!ImageDFS Image filing system for 5.25 DFS Disc Images"
+B21	TBAFSarc	TBA Archive
+B1E	PsionPIC	Psion picture
+B16	ProOrder	
+B12	TTXpage	Teletext+ page
+B11	TTXscrpt	Teletext+ script file
+B0F	CasetDATA	
+B09	ImageMap	
+B02	Meta	MidiWorks Meta Event
+AFF	DrawFile	
+AFE	Mouse	Mouse event record
+AFD	GCAL	GCAL source, (text)
+AFC	GCODE	GCODE intermediate
+AFB	PhonePad	
+AFA	DtpStyle	Acorn DTP style sheet
+AF9	DtpDoc	Acorn DTP document
+AF8	1stWord+	First Word Plus document
+AF7	HelpInfo	Interactive help
+AF6	SimTrace	ASim trace
+AF5	PostData	Econet mail setup
+AF4	PostFile	Econet mail filed
+AF3	PostBox	Econet mail postbox
+AF2	PostTray	Econet mail in-tray
+AF1	Music	!Maestro music
+AF0	ARCWrite	ArcWriter
+AEF	Sheet	
+AEE	SheetWS	Schema macro
+AED	SheetMac	Schema configure
+AEC	DBFile	
+AEB	DBReport	
+AEA	DBChart	
+AE9	Alarms	Alarm times
+AE8	SaveGame	Saved game
+AE7	ARMovie	Video
+AE6	MSWord	Word processor document
+AE4	Java	Java application
+AE3	Director	Animation
+AE1	IndexFile	
+ADF	PDF	Portable Document Format
+ADE	Safe	
+ADC	DisCat	
+ADB	New Font	Outline Font
+ADA	Package	
+AD8	PsiMBM	Psion Series 5
+AD1	HQ-Inst	
+ACF	vCard	Personal information including addresses
+ACF	QTM	Music tracker. Does not seem to be used in latest QTM
+ACE	Wavelength	
+ACC	ISO-9660	CD image
+ACA	LaTeX	LaTeX source (industry standard)
+AC9	VF	TeX virtual font
+AC4	H2Map	Heroes of Might and Magic 2 (R-Comp Interactive)
+AC3	H2MapX	Heroes of Might and Magic 2 (R-Comp Interactive)
+ABF	Cabinet	Archive
+ABB	PlugIn	Cerilica Vantage Extension
+ABA	CPIO	Archive
+AB9	Monitor	Cerilica Monitor Calibration
+AB7	PPD	PostScript Printer Definition
+AAD	SVG	Scalable Vector Graphics drawing
+AAC	DialUp	
+AAB	DialAcc	
+AAA	RiscOS3?	(Acorn)
+AAA	Compdraw	
+AA8	pls	SHOUTcast internet radio playlist
+AA7	M3UFile	WinAmp mp3 URL list
+AA6	TaskApp	Absolute in a TaskWindow
+AA5	TskBasic	BASIC in a TaskWindow
+AA0	MultiPlt	Graph data
+A9F	GraphDrw	Graph data
+A9E	ChartDrw	Chart data
+A9D	KeyTops	Keyboard definition
+A91	Zip	Zip archive
+A8F	AC3Audio	AC3 raw audio
+A8D	VOB	MPEG DVD video
+A81	ODT	
+A7F	MSExcelX	Microsoft Excel document
+A7E	MSWordX	Microsoft Word document
+A79	CUE	CDROM image CUE file
+A78	FzDraw	Drawfile-packaged Fireworkz document
+A77	PDChart	Drawfile-packaged PipeDream chart
+A76	EPUB	Electronic publication
+A70	SQLiteDB	SQLite database
+A6F	AnqExp	Anquet Export Format
+A66	WebP	
+A65	JPEG2000	
+A64	MP4	
+A63	MKV	
+A61	QOI	Quite OK Image
+A06	Perl	Perl script (also 102)
+A05	WHelp	
+9FB	Basalt	BASIC program translated to run using Basalt
+9F8	HD_BackJ	
+9F0	Money	Never circulated
+9EB	Index	No longer used
+999	Spectrum	
+907	Goop	Scores for Goop game
+900	Universal	
+8FF	DisasMap	Disassembler
+81C	ICM	ICC Colour Profile
+815	SKoords	
+810	DrawLib	Draw Library
+80C	StatPad	Uniform stationary pad
+80B	VideoTex	Uniform Videotex
+80A	DBForm	Uniform database form
+809	DataBase	Uniform database
+808	UniPS	Uniform PostScript
+808	EPS	!EPSobject
+807	GrphChrt	Uniform graphs & charts
+806	PointEd	
+806	Graphics	Uniform graphics
+805	Drawing	Uniform drawing
+804	Picture	Uniform picture
+803	Spreadsh	Uniform spreadsheet
+802	UnifText	Uniform text only
+801	Wordproc	Uniform wordprocessor
+800	Uniform	BBC Uniform File
+800	Inlay	Tape inlay
+7FF	WOFFfont	WOFF font
+7FF	SUVec	!SU Vector file
+7FF	SCRUtils	
+7FF	Psion	Psion
+7FF	FS Options	(Copy options)
+7FF	Flare	
+7FE	UUEncode	!U2
+7FE	SUCoord	!SU Coordinate file
+7FE	CMOS	Cmos_Edit saved CMOS RAM
+7FD	SUNames	!SU cave survey names file
+7FD	Menus	
+7FD	Encoded	
+7F6	PlotFile	
+7F6	MultPlot	
+7F5	PwrBase	
+7F4	PwrBase	
+7F3	GrphFile	
+7F3	PwrBase	
+7F2	PowerBase	PowerBase database
+7F2	POSFile	!Betts POS file
+7F2	KeyStrip	Key strip
+7F1	SVYFile	!Betts SVY file
+7F1	PwrBase	PowerBase valid
+7F1	ChrtFile	ChartDraw
+7F0	PwrBaseI	PowerBase index
+7F0	CaveData	!Betts source data file
+7EF	Morph	
+7EF	MailFile	Mail browser
+7DC	HelpFile	PowerBase help
+7B7	ST Song	Soundtracker
+7B4	IFF Samp	Same as FC2
+7B3	ST Patt	Soundtracker
+7AF	Pointer	
+7A3	DCatFile	Disc catalogue
+7A0	Timestep	TimeStep satellite image
+787	SysEx	
+77F	TTF Font	TrueType font
+77F	HypHelp	
+77E	CmpHHlp	
+77D	HHBookM	
+777	GraphDat	3-D Graph
+777	GraphDat	Graph
+770	MIDISysX	Raw MIDI System Exclusive data (first byte = &F0, last byte = &F7)
+750	Diction	Articulate
+745	WireWorld	
+744	CoreWars	Core Wars
+733	FracTrace	
+725	extASM	Assembler source
+721	HP11_Prog	
+720	CardFile	CardIndex database
+711	TaskList	StartTask task list
+710	QTM	
+710	!Packer	
+70A	WeathrYr	WeatherYear
+707	DDF	
+703	Speculatr	
+702	Spectrum	Spectrum
+702	DissMdle	!Dissi Module file
+701	Speculator	
+701	ProTrack	!ProTrack Protracker music
+701	KeyDefs	Function keys
+701	Atoms	
+701	Archway2	
+700	Speculator	
+700	Mole	
+700	DissiCtr	!Dissi disassembler control file
+700	ChessGame	Saved !Chess Game
+700	Archway2	
+700	Album	Album
+6FF	MbrotPar	Mandel 4
+6B4	TTFile	LTGame (never circulated)
+6B3	JnyFile	LTGame (never circulated)
+6B2	ArryFile	LTGame (never circulated)
+6B1	DataFile	LTGame (never circulated)
+6A6	WPGraphic	WordPerfect Graphic
+6A5	TABFile	
+6A5	ICO	Use 132 instead
+6A5	CUR	Windows 3.0 cursor definition
+6A4	HawkV9	Wild Vision Hawk V9 digitiser
+6A3	FITS	Flexible Image Transport System image
+6A2	ColoRIX	RIX Softworks image
+6A1	RLE	Unix RLE image
+6A0	MSX2	MSX-2 image
+69F	ZVDA	Zeridajh video digitiser animation
+69E	PBMPlus	Portable Bit Map Plus toolkit/portable pixmap
+69D	Targa	Truevision Targa
+69C	BMP	MS Windows bitmap
+69B	Irlam	Irlam Instruments scanner image
+69A	CadSoft	Prisma
+699	MTV	MTV ray tracer picture
+698	QRT	uick Ray Tracer picture
+697	PCX	PCX picture
+696	Pineappl	Pineapple digitised colour image
+695	GIF	Graphics Interchange Format
+694	MacPaint	Macintosh MacPaint bitmap
+693	AmigaIFF	Amiga IFF (ILBM)
+692	Img	Atari IMG image
+691	Degas	Atari Degas image PI1,PI2,PI3,PC1,PC2,PC3
+690	Clear	Clear image
+68E	PackdDir	Packdir compressed archive
+681	NDX	
+680	DBaseIV	Database
+666	ReadFont	
+666	Read	CGM
+666	AmazeLev	
+664	Song	Music track
+657	BreederCA	
+656	?	Inspiration
+655	?	Inspiration
+654	?	Inspiration
+653	?	Inspiration
+652	?	Inspiration
+651	?	Inspiration
+639	XMFSprite	XMF painting sprite
+635	Harmonica	
+634	Effex	
+633	RawSampl	
+632	SgnSampl	
+632	RIFFwave	SoundCon sound sample —> FB1
+631	LogSampl	
+604	NetWork	
+601	CCIR601	720×288 or 720×243 YUV picture
+600	Mandel	!MandlePlot compressed sprite
+600	LoggaLog	
+5FF	OnHand	On Hand
+5FE	Flood?	Flood game saved levels
+5F4	SparkScr	Spark command script
+5F4	Fractal	
+5C4	Sculptor?	
+5C2	Sculptor?	
+5C1	Sculptor?	
+5C0	Sculptor	
+560	DrghtsGame	
+556	Archrome	
+555	DiskBase	DiskBase
+554	3View	
+553	DrawLib	Vector object library
+550	Musix	
+54F	Delta	Delta film
+515	AMFEdit16	
+510	STracker	Music track
+500	LQFont	LQ500 printer downloadable font
+500	World	WorldScape Save Game
+4FF	QGraphx	QGraphics
+4DD	DAs_Pict	
+4BD	PolySaw	
+4AD	PhonePad	PhonePad
+474	Sticky	!Sticky backdrop
+450	Configs	
+449	G_Proj	Project for Mark Jones’s Haskell dialect
+448	G_Script	Script for Mark Jones’s Haskell dialect
+444	STScript	
+43B	Scroll_W	Archway2
+439	Menu_W	Archway2
+437	View_W	Archway2
+435	Tools_W	Archway2
+433	Dialog_W	Archway2
+431	Form_W	Archway2
+42F	DisplayW	Archway2
+425	PDTSetup	
+422	Fonts	Archway2
+420	PrintSet	Printer settings
+420	Custom	Archway2
+419	Options	Copy/Wipe Filer options
+418	VStrings	Archway2
+416	Messages	Archway2
+414	WClasses	Archway2
+413	SpoolBuf	
+412	Win_Met	
+412	TelPhone	
+412	IClasses	Archway2
+411	TaskList	StartTask
+411	EncPS	
+410	OS2_Met	OS2 MetaFile
+410	GIF	do not use —> 695
+410	Code	Archway2
+410	AlphaBase	
+40E	TempestDTP	Tempest DTP
+40E	Leader	
+40E	CharSets	Archway2
+40D	TempestDTP	Tempest DTP
+40C	LinePats	Archway2
+40C	TempestDTP	Tempest DTP
+40B	Archway2	Archway2
+40B	DTPFlow	Tempest DTP
+40A	DTPStyle	Tempest DTP
+40A	FillPats	Archway2
+409	Backup	Backup3
+409	DTPStylesht Tempest DTP	
+408	AOutline	
+408	DTPDocument Tempest DTP	
+408	Pointers	Archway2
+407	Choices	Archway2
+407	Label	
+406	Account	
+406	Key	Archway2
+405	MetaFile	Computer Graphics Metafile CGM/GMF
+405	TempstDTP	Tempest DTP
+404	GWMulti	GraphicWriter
+403	GWVDU	GraphicWriter
+402	GwMaster	GraphicWriter Menus
+401	Accounts	
+401	GWGraph	GraphicWriter
+400	GuardMod	!Lifeguard screen-saver effects module
+400	GwText	GraphicWriter
+400	LifeGuard	
+3FB	ArcFSArc	!ArcFS archive
+3F8	FontMGR	
+3F7	GamePos	
+3F2	ArmSI	ARM speed indicator
+3F1	MemDisc	
+3ED	FreVocab	
+3EB	Liberatr	Liberator talker memory dump
+3E2	VistTune	Vistamusic Tune
+3E0	HQ-Data	
+3DC	ARJArc	ARJview
+3D6	StrngHlp	StrongHelp help image
+3C7	FEMSFile	
+3C1	TwEffect	
+3BF	ArcFS	!ArcFS archive
+3B8	MLCS	
+380	HBScript	Backup
+371	RGB	RGB picture
+371	RayShade	ditto
+365	CocoTrak	
+364	CocoSong	
+360	SlideShow	SlideShow sequence
+351	Sequence	
+350	Squished	
+345	FaxText	
+333	Patience	
+326	BackOpts	
+325	BackData	
+325	PDTSetup	
+321	Menus	Menu designer
+31B	DXen	Music track
+309	OrdSheet	
+301	XPixMap	
+301	FLI	use B9F
+300	TimeStep	Satellite image
+2FF	SciGraph	
+2F8	Z80 MOS	!Z80Tube MOS
+2DF	D2Font	Draw2Font file
+2BF	Tile_F	
+2BE	Embrdr_F	
+2BD	Stitch_F	
+2BC	Patt_F	
+2B8	WTpattrn	
+2B4	Squeezed	
+2B3	Squeezed	
+2B2	Jigsaw	
+2B0	Jigsaw	
+297	Comprssd	
+28A	Edit+	!Edit+
+289	P Z88	Printed
+288	N Z88	Normal Z88
+280	Z80	!Z80Tube general Z80 snapshot
+259	Server	Server side image map
+258	Dancer	
+234	Thoughts	
+230	Ghostly	Haunted House (The Fourth Dimension)
+226	CompFile	
+225	VGGame	
+224	VGStatus	
+223	CompHole	
+222	DateMarker	
+214	WolfData	Wolfenstein 3-D data file
+204	Typeface	Italicer Typeface
+202	Song	Mascom2
+201	Z80 COM	!Z80Tube .COM file
+200	CAIFSArc	
+200	CF Circ	
+200	GraphSrc	
+1FF	OldSong	Mascom2
+1FF	TData	Tiger
+1FF	Tiger	
+1F1	Tiles	
+1EC	Crypt	Crypt
+1E4	SeasonSG	Saved game
+1E3	GPX	Route data e.g. GPS
+1DF	DiscCat	Disc catalogue data
+1DF	Objects	
+1DA	GPIOConf	GPIO configuration data
+1D9	Syncjob	Synnchronisation details
+1D8	PrintPDF	Bookmark and hotspot data for the PrintPDF application
+1D5	vCalendr	Calendar and Diary information
+1D5	?	
+1CF	Conjugez	
+1CF	FLAC	Free Lossless Audio Codec
+1CA	CashBook	Filetype for the CashBook personal accounts package
+1CA	HotKeys	
+1C8	Symlink	Symbolic link
+1C7	Basic8	Tokenised BBC BASIC in Z80/80×86/Windows format, also known as “Russell format”
+1C6	32016	32016 code
+1C5	PDP-11	PDP-11 code
+1C1	JSW_Data	Jet Set Willy room, scenery, or animation
+1C0	JSW_Game	Jet Set Willy Game file
+1BC	Imagen	
+1B9	TZX	Advanced Tape file format for use with spectrum emulators
+1B8	VOC	Standard .VOC file format
+1B7	ArmBob	Filetype for ArmBob files
+1B5	DirSync	DirSync project file
+1B1	PCTk	Generic PC music track
+1B0	ScreamTk	ScreamTracker music track
+1AF	FstTk	FastTracker2 music track
+1AE	ImpulsTk	ImpulseTracker music track
+1AD	AMPEG	Audio MPEG
+1AD	Protector	
+1AC	Project	
+1AB	Address	Address book
+1AA	CSSC	CSSC
+1A8	Vorbis	Ogg Vorbis audio
+1A1	Locate	Search definitions/results for Locate file-finder
+1A0	TSAC	
+199	Encode4	Encoder input
+199	Encoded1	
+198	Encode4	Encoder output
+198	Encoded2	
+18D	TaskLua	lua script or compiled object in a TaskWindow
+18C	Lua	lua script or compiled object file
+188	Flash	Macromedia flash file
+187	awk	awk scrip
+180	Copier180	
+180	Mail	TransArc
+17F	VideoLst	Video database
+17C	Quetzal	
+17B	Blorb	
+172	Copier172	
+16D	Organizer	Addresses, appointments and alarms
+16C	DoomWad	Doom Iwad/Pwad
+164	C64-Disc	C64 archive
+164	Copier164	
+160	Copier160	
+15C	PsiAgnda	Psion Series 5/7 diary
+15B	PsiData	Psion Series 5/7 database
+15A	PsiOPL	Psion Series 5/7 program
+159	PsiRecrd	Psion Series 5/7 audio
+158	Psion	Psion Series 5/7
+158	PlylstCD	
+157	Playlist	
+157	PsiSheet	Psion Series 5/7 spreadsheet
+156	PsiWord	Psion Series 5/7 document
+156	Squished	
+155	FileList	Playlist
+154	SR2000	
+153	Cabri	!Cabriolet (dynamic geometry)
+152	PolyData	Polyhedron definitions for !PolyDraw, !PolyNet
+144	Copier144	
+13D	TankSave	T.A.N.K.S. (Werewolf Software)
+13C	JFPatch	Assembler patch file
+139	3DScene	
+138	MapprMap	!Mapper_O 2D map with overlays
+132	ICO	Windows 3.0 icon collection
+130	AntiGrav	
+12B	RasMolSc	
+12A	PDB	
+129	Alchemy	
+128	MOL	
+128	Pifile	
+127	MOPAC	
+123	ALPS	(Alpine Software)
+123	Creator	
+122	Genetic	Genetic Algorithm data
+120	ANSI	Ansi2Text
+11D	TAP	Compressed 1-bit sound for emulators
+11A	Z-Code	Infocom adventure game
+118	Angband	Angband saved game file
+116	DemoMolec	
+113	FastSpr	
+113	MoleAnim	
+113	Proj Man	
+112	MatlabFn	MatLab
+112	Stasis	
+112	Teletext	Teletext frame dump
+111	MatlabSc	MatLab
+111	MSDOS	!Spark/ArcFS RS DOS/PC PKARC compacted archive contents
+111	RSDOS	RS DOS
+110	RLaB	
+10F	CLIcon	
+10C	Keyboard	
+10B	Symphony	
+10A	SySample	
+109	Glass	
+109	Glazier	
+108	DataVox	SysBeep sound file with internal chunk structure
+107	OreDBase	Oregan Database – Archivist Pro
+103	UniMode	VIDC regs and ModeVariables
+102	Perl	Perl script (also A06)
+102	SpellDict	
+101	Calcsprd	Calc spreadsheet
+101	Phone	
+100	1stsheet	1st Statistics package
+100	BackDrop	
+0FF	Diss	
+0FF	FineArt	
+0FF	F-Paper	
+0FF	Used	File marked as used
+0FE	F-Pal	
+0FE	Psion	Psion Organiser II file
+0FD	F-Shapes	
+0FD	Probase	
+0FD	Z88Link archives	
+0FC	Ray3d	
+0FB	GEK Data	GEK games
+0FB	RayLib	
+0FA	RayMacro	
+0F8	HelpFile	
+0F8	MPEG	Video
+0F5	EPSI	Encapsulated PostScript with Thumbnail
+0ED	SprColor	Compact colour palette
+0E3	SSSheet	
+0DE	BackMenu	BackMenu
+0DC	Keystrip	
+0D8	GBSnap	Gameboy emulator snapshot
+0D7	Gameboy	Gameboy emulator ROM-image
+0D1	AddrList	
+0CF	Options	
+0CE	CDData	
+0CD	CDTrack	
+0CC	Card	
+0CC	HellFile	
+0CA	Calendar	Appointments
+0C8	Pi	Anime picture
+0C6	Pic	Anime picture
+0C5	ECC Anim	Anime picture
+0C4	MAG	Anime picture
+0BC	PCRun	PC application startup
+0BB	BBCRun	BBC application startup
+0BB	MegaBoard	
+0BA	TaskBAS	BASIC in a taskwindow (use AA5)
+0B2	SoftList	
+0AD	Split	Subsection of large file
+0AC	DiscBox	
+0AB	PPPTrack	
+0AA	Indexer	
+099	Puzzle	
+084	PIC16C84	Mike Cook’s PIC Programmer
+083	TauStyle	Tau
+082	TauFile	Tau
+07F	OTF Font	OpenType font
+077	FTPc	
+073	Sticky	
+071	AVI	Audiovisual (See also FB2)
+070	QuakePAK	Id Quake archive
+06C	TADS	
+069	BigMArt	BigMArt15
+068	BigMArt	BigMArt15
+068	Z-Code8	Infocom adventure game (version 8 Z-Code program)
+067	Z-Code7	Infocom adventure game (version 7 Z-Code program)
+066	Z-Code6	Infocom adventure game (version 6 Z-Code program)
+065	XPS	XML Paper Specification document
+065	Z-Code5	Infocom adventure game (version 5 Z-Code program)
+064	C64	C64 executable
+064	Z-Code4	Infocom adventure game (version 4 Z-Code program)
+063	SIDSong	Playsid music track
+063	Z-Code3	Infocom adventure game (version 3 Z-Code program)
+062	Z-Code2	Infocom adventure game (version 2 Z-Code program)
+061	Z-Code1	Infocom adventure game (version 1 Z-Code program)
+050	3DPlanes	
+050	Filer	
+050	FracDef	
+046	ColorMap	
+045	FracPars	
+044	Spray	
+042	SimpleDTP	
+042	Widget5	!Widget5 512×512 greyscale image
+041	Widget4	!Widget5 256×256 greyscale image
+041	Resource	
+040	Wordsrch	
+03C	WordSq	!WordSq creation and solving
+03B	GEK Pack	GEK games
+022	Niall II	
+022	PGP	PGP signed file
+021	compress	
+017	PlanF	
+016	PlnPg	
+012	AIM	Archimedes Image Manager Configuration
+012	AIM Cfg	
+011	AIM	Archimedes Image Manager
+011	HelpText	
+010	AIM+	Archimedes Image Manager Plus Image header
+010	AIMInfo	ditto
+010	Mailabl	
+00F	Pottery	
+00F	UntypedS	Sound sample
+00E	U2Enc	!U2 see also 7FE
+00D	U2Dec	!U2 (obsolete)
+00C	!Circuit	
+00B	MegaBoard	
+00B	!Armony	
+00B	Matrix	Matrix tracker music track
+00A	IcnStorm	
+00A	Armony	
+008	GolfDemo	
+007	LCrypted	
+006	ScotSave	
+006	PathFile	
+006	WildV12	WildVision 512×512×8b grey picture
+005	ScottGame	
+004	AOutline	ArcOutline
+004	AIM	Archimedes Image Manager greyscale
+003	ArmSI	Speed indicator
+002	STracker	!STracker tune
+002	SampDump	Vivaldi compressed sound sample file
+002	PlayMod	
+001	STracker	!STracker tune
+001	Castles	Castles
+000	MusDump	Vivaldi compressed music file
+000	Crunched	Cruncher

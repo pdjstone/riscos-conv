@@ -1,0 +1,38 @@
+[project]
+name = "riscos-conv"
+version = "0.0.1"
+authors = [
+  { name="Paul Stone" }
+]
+description = "Library and CLI tools to convert to/from RISC OS formats"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Environment :: Console",
+]
+dependencies = [
+  "toml",
+  "tomlkit",
+  "jinja2",
+  "requests",
+  "ADFSlib @ git+https://github.com/pdjstone/adfslib.git",
+  "markdown-it-py[plugins]",
+  "pillow",
+  "pycdlib"
+]
+
+[project.scripts]
+riscos-conv = "riscosconv.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/pdjstone/riscos-conv"
+Issues = "https://github.com/pdjstone/riscos-conv/issues"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+
