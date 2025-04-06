@@ -335,6 +335,12 @@ def get_rgb_palette(sprite: Sprite) -> List[int]:
     return pal
 
 
+def list_sprites(sprite_area: SpriteArea):
+    for spr in sprite_area.sprites():
+        print(f'  {spr.name} ({spr.width}x{spr.height}) mode {spr.mode}')
+        #print(spr)
+
+
 if __name__ == '__main__':
     with open(sys.argv[1], 'rb') as f:
         sprite_area = SpriteArea(f)

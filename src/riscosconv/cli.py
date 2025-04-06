@@ -2,6 +2,7 @@ import argparse
 from io import BytesIO
 import os
 import re
+import struct
 import sys
 import time
 from collections import namedtuple
@@ -12,6 +13,8 @@ from typing import IO, Optional
 from zipfile import ZipFile, is_zipfile
 
 from ADFSlib import ADFSdirectory, ADFSdisc, ADFSfile, ADFS_exception
+
+from riscosconv.sprites import SpriteArea, list_sprites
 
 from .filetypes import RISC_OS_FILETYPES
 from .ro_file_meta import DiscImageBase, RiscOsFileMeta, FileMeta
@@ -28,7 +31,8 @@ class KnownFileType(Enum):
     DISC_IMAGE = 4
     SPARK_ARCHIVE = 5
     ARCFS_ARCHIVE = 6
-    UNKNOWN = 7
+    RISC_OS_SPRITES = 7
+    UNKNOWN = 8
 
 def has_disc_image_ext(filename: str) -> bool:
     return any(filename.lower().endswith(ext) for ext in DISC_IM_EXTS)
@@ -213,21 +217,30 @@ def identify_discimage(filename: str, fd):
         return KnownFileType.UNKNOWN
 
 def identify_file(filename: str, fd) -> KnownFileType:
+
+    if filename.endswith(',ff9'):
+        return KnownFileType.RISC_OS_SPRITES
+    
     if is_zipfile(fd):
         zipfile = ZipFile(fd)
         return identify_zipfile(zipfile)
     
     fd.seek(0, os.SEEK_SET)
-    data = fd.read(8)
+    data = fd.read(12)
     fd.seek(0, os.SEEK_SET)
 
     # From spark.h in NSpark
     if data[0] == 0x1a and (data[1] & 0xf0 == 0x80 or data[1] == 0xff):
         return KnownFileType.SPARK_ARCHIVE
   
-    if data == b'Archive\x00':
+    if data[0:8] == b'Archive\x00':
         return KnownFileType.ARCFS_ARCHIVE
   
+    num_sprites, first_offset, next_free = struct.unpack('<III')
+    size = fd.seek(0, os.SEEK_END)
+    if first_offset == 16 and next_free == size + 4:
+        return KnownFileType.RISC_OS_SPRITES
+    
     return identify_discimage(filename, fd)
 
 def load_disc(main_file: str) -> Optional[DiscImageBase]:
@@ -265,11 +278,12 @@ HANDLER_FNS = {
     KnownFileType.DISC_IMAGE: RiscOsAdfsDisc,
     KnownFileType.RISC_OS_ZIP: RiscOsZip,
     KnownFileType.ARCFS_ARCHIVE: NSparkArchive,
-    KnownFileType.SPARK_ARCHIVE: NSparkArchive
+    KnownFileType.SPARK_ARCHIVE: NSparkArchive,
+    KnownFileType.RISC_OS_SPRITES: SpriteArea
 }
 
 def cli():
-    parser = argparse.ArgumentParser(prog='roconv', description="Extract and create RISC OS ZIP files")
+    parser = argparse.ArgumentParser(prog='riscos-conv', description="Extract and create RISC OS ZIP files")
     parser.add_argument('-d', '--dir', default='.', help='Output directory')
     parser.add_argument('-a', '--append', action='store_true', help='Append files to existing archive')
     parser.add_argument('action', choices=['x','l','c','d2z'], nargs='?', default='l', help='e[x]tract, [l]ist, [c]reate archive or convert disc to ZIP archive [d2z]')
@@ -312,7 +326,10 @@ def cli():
     print(riscos_disc)
     match args.action:
         case 'l':
-            list_disc(riscos_disc)
+            if file_type == KnownFileType.RISC_OS_SPRITES:
+                list_sprites(riscos_disc)
+            else:
+                list_disc(riscos_disc)
         case 'x':
             assert os.path.isdir(args.dir)
             extract_riscos_disc(riscos_disc, args.dir)
