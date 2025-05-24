@@ -236,8 +236,9 @@ def identify_file(filename: str, fd) -> KnownFileType:
     if data[0:8] == b'Archive\x00':
         return KnownFileType.ARCFS_ARCHIVE
   
-    num_sprites, first_offset, next_free = struct.unpack('<III')
+    num_sprites, first_offset, next_free = struct.unpack('<III', data)
     size = fd.seek(0, os.SEEK_END)
+    fd.seek(0, os.SEEK_SET)
     if first_offset == 16 and next_free == size + 4:
         return KnownFileType.RISC_OS_SPRITES
     
