@@ -18,8 +18,6 @@ dependencies = [
   "tomlkit",
   "jinja2",
   "requests",
-  "ADFSlib @ git+https://github.com/pdjstone/adfslib.git",
-  "markdown-it-py[plugins]",
   "pillow",
   "pycdlib"
 ]
