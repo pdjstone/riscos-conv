@@ -1,5 +1,4 @@
 import argparse
-from io import BytesIO
 import os
 import re
 import struct
@@ -8,18 +7,17 @@ import time
 from collections import namedtuple
 from datetime import datetime
 from enum import Enum
+from io import BytesIO
 from pathlib import Path
 from typing import IO, Optional
 from zipfile import ZipFile, is_zipfile
 
-from ADFSlib import ADFSdirectory, ADFSdisc, ADFSfile, ADFS_exception
-
-from riscosconv.sprites import SpriteArea, list_sprites
-
+from .adfslib import ADFS_exception, ADFSdirectory, ADFSdisc, ADFSfile
 from .filetypes import RISC_OS_FILETYPES
-from .ro_file_meta import DiscImageBase, RiscOsFileMeta, FileMeta
-from .riscos_zip import RiscOsZip, convert_disc_to_zip, get_riscos_zipinfo
 from .nspark import NSparkArchive
+from .riscos_zip import RiscOsZip, convert_disc_to_zip, get_riscos_zipinfo
+from .ro_file_meta import DiscImageBase, FileMeta, RiscOsFileMeta
+from .sprites import SpriteArea, list_sprites
 
 DISC_IM_EXTS = ('.adf','.adl')
 
@@ -58,7 +56,9 @@ class RiscOsAdfsDisc(DiscImageBase):
                 ds = ro_meta.datestamp
                 if not ds:
                     ds = datetime.now()
-                full_path = (path + '/' + f.name).removeprefix('/')
+                # TODO: properly support/convert RISC OS paths via new pathlib type
+                filename = f.name.replace('/', '.')
+                full_path = (path + '/' + filename).removeprefix('/')
                 yield full_path, FileMeta(ro_meta, ds, f.length)
             elif isinstance(f, ADFSdirectory):
                 yield from self.list(f.files, path + '/' + f.name)
@@ -143,11 +143,11 @@ def extract_riscos_disc(disc: DiscImageBase, path='.'):
     if many_files_in_root(disc):
         name, _ = os.path.splitext(os.path.basename(disc.disc_name))
         path += '/' + name
-    print(f'Extracting to {path}')
+    print(f'Extracting to {path}:')
     for filename, meta in disc.list():
         ro_meta = meta.ro_meta
         extract_path = os.path.join(path, filename + ro_meta.hostfs_file_ext())
-        print(extract_path)
+        print(' ', extract_path)
         extract_dir = os.path.dirname(extract_path)
         os.makedirs(extract_dir, exist_ok=True)
         with disc.open(filename) as f:
@@ -158,6 +158,13 @@ def extract_riscos_disc(disc: DiscImageBase, path='.'):
             ts = time.mktime(ds.timetuple())
             ts_ns = int(ts * 1_000_000_000) + ds.microsecond * 1000
             os.utime(extract_path, ns=(ts_ns,ts_ns))
+
+def extract_riscos_sprites(sprite_area: SpriteArea, path='.'):
+    print(f'Extracting to {path}')
+    for spr in sprite_area.sprites():
+        out_name = f'{path}/{spr.name}.png'
+        print(f'  {out_name}')
+        spr.get_pil_image().save(out_name)
 
 def add_file_to_zip(zipfile: ZipFile, filepath: Path, base_path: Path):
     zipinfo = get_riscos_zipinfo(filepath, base_path)
@@ -173,7 +180,7 @@ def add_dir_tree_to_zip(zipfile: ZipFile, dirpath: Path, basepath: Path):
             add_file_to_zip(zipfile, filepath, basepath)
           
 def create_riscos_zipfile(zipfile: ZipFile, paths: list[str]|str):
-    if type(paths) == str:
+    if type(paths) is str:
         paths = [paths]
 
     for path in paths:
@@ -211,9 +218,9 @@ def identify_zipfile(zipfile: ZipFile):
 
 def identify_discimage(filename: str, fd):
     try:
-        adfsdisc = ADFSdisc(fd)
+        ADFSdisc(fd)
         return KnownFileType.DISC_IMAGE
-    except ADFS_exception as e:
+    except ADFS_exception:
         return KnownFileType.UNKNOWN
 
 def identify_file(filename: str, fd) -> KnownFileType:
@@ -283,6 +290,22 @@ HANDLER_FNS = {
     KnownFileType.RISC_OS_SPRITES: SpriteArea
 }
 
+LIST_FNS = {
+    KnownFileType.DISC_IMAGE: list_disc,
+    KnownFileType.RISC_OS_ZIP: list_disc,
+    KnownFileType.ARCFS_ARCHIVE: list_disc,
+    KnownFileType.SPARK_ARCHIVE: list_disc,
+    KnownFileType.RISC_OS_SPRITES: list_sprites
+}
+
+EXTRACT_FNS = {
+    KnownFileType.DISC_IMAGE: extract_riscos_disc,
+    KnownFileType.RISC_OS_ZIP: extract_riscos_disc,
+    KnownFileType.ARCFS_ARCHIVE: extract_riscos_disc,
+    KnownFileType.SPARK_ARCHIVE: extract_riscos_disc,
+    KnownFileType.RISC_OS_SPRITES: extract_riscos_sprites
+}
+
 def cli():
     parser = argparse.ArgumentParser(prog='riscos-conv', description="Extract and create RISC OS ZIP files")
     parser.add_argument('-d', '--dir', default='.', help='Output directory')
@@ -323,17 +346,17 @@ def cli():
         output_zip_path = args.files[0]
         extract_paths = args.files[1:]
 
-    riscos_disc = HANDLER_FNS[file_type](fd)
-    print(riscos_disc)
+   
     match args.action:
         case 'l':
-            if file_type == KnownFileType.RISC_OS_SPRITES:
-                list_sprites(riscos_disc)
-            else:
-                list_disc(riscos_disc)
+            riscos_disc = HANDLER_FNS[file_type](fd)
+            print(riscos_disc)
+            LIST_FNS[file_type](riscos_disc)
         case 'x':
+            riscos_disc = HANDLER_FNS[file_type](fd)
+            print(riscos_disc)
             assert os.path.isdir(args.dir)
-            extract_riscos_disc(riscos_disc, args.dir)
+            EXTRACT_FNS[file_type](riscos_disc, args.dir)
         case 'c':
             mode = 'w'
             if args.append:
@@ -341,6 +364,8 @@ def cli():
             zip = ZipFile(main_file, mode)
             create_riscos_zipfile(zip, args.files)
         case 'd2z':
+            riscos_disc = HANDLER_FNS[file_type](fd)
+            print(riscos_disc)
             convert_disc_to_zip(riscos_disc, output_zip_path, extract_paths)
 
 

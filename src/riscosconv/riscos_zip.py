@@ -134,7 +134,7 @@ def zip_extract_ro_path(zipfile: ZipFile, path: Path, filetype=None):
         return zipfile.open(info)
 
 def convert_disc_to_zip(disc: DiscImageBase, zip_path, extract_paths: list[str] = None):
-    assert type(extract_paths) == list
+    assert type(extract_paths) is list
 
     zf = ZipFile(zip_path, 'w')
     for path, file_meta in disc.list():
@@ -152,7 +152,7 @@ def convert_disc_to_zip(disc: DiscImageBase, zip_path, extract_paths: list[str] 
         ds = file_meta.timestamp
    
         date_time = ds.year, ds.month, ds.day, ds.hour, ds.minute, ds.second
-        zipinfo = ZipInfo(zip_path, date_time)
+        zipinfo = ZipInfo(path, date_time)
         zipinfo.extra = zip_extra(file_meta.ro_meta)
         if file_meta.file_size > 512:
             zipinfo.compress_type = ZIP_DEFLATED

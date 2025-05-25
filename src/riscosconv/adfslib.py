@@ -1193,7 +1193,7 @@ class ADFSdisc(Utilities):
         disc_id   = self._read_unsigned_half_word(self.sectors[offset + 20 : offset + 22])
         # DiscName
         disc_name = (self.sectors[offset + 22 : offset + 32]).decode('iso-8859-1').strip().encode()
-        
+
         return {'sectors': nsectors, 'log2 sector size': log2_sector_size,
             'sector size': 2**log2_sector_size, 'heads': heads,
             'density': density,
@@ -1742,6 +1742,8 @@ class ADFSdisc(Utilities):
         bits = path.split('/')
         while bits:
             p = bits.pop(0).lower()
+            p = p.replace('.', '/')
+
             f = next((f for f in cur if f.name.lower() == p), None)
             if isinstance(f, ADFSfile) and bits:
                 print(' bad path')
