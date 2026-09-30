@@ -1,11 +1,14 @@
+import os
+import shutil
+import struct
+import tempfile
 from datetime import datetime
 from pathlib import Path
-import os
-import struct
 from typing import IO, Optional
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
-from .ro_file_meta import DiscImageBase, FileMeta, RiscOsFileMeta 
 
+from .ro_file_meta import DiscImageBase, FileMeta, RiscOsFileMeta
+from .zip_implode import setup_zip_implode
 
 ZIP_EXT_ACORN = 0x4341    # 'AC' - SparkFS / Acorn
 ZIP_ID_ARC0 = 0x30435241  # 'ARC0'
@@ -91,8 +94,10 @@ ZipInfo.getRiscOsMeta = _decodeRiscOsExtra
 
 # We need to override the default filename codec 
 # Python >= 3.11 supports metadata_encoding param but only for reading
-import encodings.iso8859_1
 import encodings.cp437
+import encodings.iso8859_1
+
+
 def _encodeFilenameFlags(self):
     return self.filename.encode('iso-8859-1'), self.flag_bits
 
@@ -133,7 +138,7 @@ def zip_extract_ro_path(zipfile: ZipFile, path: Path, filetype=None):
             continue
         return zipfile.open(info)
 
-def convert_disc_to_zip(disc: DiscImageBase, zip_path, extract_paths: list[str] = None):
+def convert_disc_to_zip(disc: DiscImageBase, zip_path, extract_paths: list[str] | None = None):
     assert type(extract_paths) is list
 
     zf = ZipFile(zip_path, 'w')
@@ -147,7 +152,6 @@ def convert_disc_to_zip(disc: DiscImageBase, zip_path, extract_paths: list[str] 
                     break
         if skip_file: 
             continue
-        file_meta.ro_meta
 
         ds = file_meta.timestamp
    
@@ -161,3 +165,19 @@ def convert_disc_to_zip(disc: DiscImageBase, zip_path, extract_paths: list[str] 
             data = fd.read()
         zf.writestr(zipinfo, data, compresslevel=9)
     zf.close()
+
+def zip_member_to_tempfile(zf: ZipFile, info) -> IO[bytes]:
+    """Materialise a zip member to a real temp file.
+
+    PyCdlib seeks around an image heavily; a zipfile.ZipExtFile re-decompresses
+    from the start on every seek, so working on zipped ISO members directly is
+    O(n^2) and painfully slow.  Write the member to disk once and read it back
+    as a real file.  A TemporaryFile is unlinked at creation (POSIX) and its
+    space freed as soon as the handle is closed or garbage-collected, so many
+    loads in one process cannot accumulate temp files.
+    """
+    tmp = tempfile.TemporaryFile()
+    with zf.open(info, 'r') as src:
+        shutil.copyfileobj(src, tmp)
+    tmp.seek(0)
+    return tmp
