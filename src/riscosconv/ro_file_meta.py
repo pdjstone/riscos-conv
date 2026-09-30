@@ -5,6 +5,8 @@ from pathlib import Path
 import re
 from typing import IO, Generator, Protocol, Tuple
 
+from .riscos_path import PureRiscOsPath
+
 
 RISC_OS_EPOCH = datetime(1900,1,1,0,0,0)
 
@@ -70,6 +72,14 @@ class RiscOsFileMeta:
             return f'RiscOsFileMeta(load={self.load_addr:x} exec={self.exec_addr:x} attr={self.file_attr:x})'
 
     @staticmethod
+    def from_datestamp(ro_timestamp, filetype=DEFAULT_RO_FILETYPE):
+        """Build metadata for an entry with no RISC OS filetype info (e.g. a ZIP
+        entry with no Acorn extra field): treat as the given filetype with the
+        supplied datestamp"""
+        load_addr, exec_addr = make_load_exec(filetype, ro_timestamp)
+        return RiscOsFileMeta(load_addr, exec_addr)
+
+    @staticmethod
     def from_filepath(path: Path):
         leaf_name = path.name
         st = os.stat(path)
@@ -104,11 +114,11 @@ class DiscImageBase(Protocol):
     def disc_name(self) -> str:
         pass
 
-    def list(self) -> Generator[Tuple[str, FileMeta], None, None]:
-        pass
-    
-    def get_file_meta(self, path: str) -> FileMeta:
+    def list(self) -> Generator[Tuple[PureRiscOsPath, FileMeta], None, None]:
         pass
 
-    def open(self, path: str) -> IO[bytes]:
+    def get_file_meta(self, path: PureRiscOsPath | str) -> FileMeta:
+        pass
+
+    def open(self, path: PureRiscOsPath | str) -> IO[bytes]:
         pass

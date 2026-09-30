@@ -9,7 +9,8 @@ Supported formats:
 * Spark/ArcFS (list/extract)
 * RISC OS Sprite files (list/extract)
 
-Spark and ArcFS files require the `nspark` tool to be installed.
+ArcFS and Spark archives are handled natively (based on the reference implementation in nspark), so no
+external tools are needed.
 Currently only Sprite files created on RISC OS 3.1 and earlier are supported.
 
 ## Usage
@@ -29,11 +30,11 @@ List a disc/archive file:
 $ riscos-conv l riscos3-app2.adf 
 file type DISC_IMAGE
 ADFS Disc - App2
-         Obey feb     132 1989-09-08 15:14:09 !65Host/!Boot
-         Text fff     157 1992-05-11 11:22:59 !65Host/!Help
-         Obey feb    1282 1992-05-18 15:03:14 !65Host/!Run
-       Module ffa   64968 1992-05-18 11:59:05 !65Host/!RunImage
-       Sprite ff9    1272 1991-06-12 12:21:21 !65Host/!Sprites
+         Obey feb     132 1989-09-08 15:14:09 !65Host.!Boot
+         Text fff     157 1992-05-11 11:22:59 !65Host.!Help
+         Obey feb    1282 1992-05-18 15:03:14 !65Host.!Run
+       Module ffa   64968 1992-05-18 11:59:05 !65Host.!RunImage
+       Sprite ff9    1272 1991-06-12 12:21:21 !65Host.!Sprites
 ...
 ```
 
@@ -103,12 +104,12 @@ This will convert a disc image to a ZIP file while retaining the file types and 
 $ riscos-conv d2z ~/projects/archimedes-live/dlcache/riscos3-app1.adf app1.zip
 file type DISC_IMAGE
 ADFS Disc - App1
-!FontPrint/!Help RiscOsFileMeta(type=fff date=1992-05-11 10:01:45 attr=3)
-!FontPrint/!Run RiscOsFileMeta(type=feb date=1992-05-14 16:18:01 attr=3)
-!FontPrint/!RunImage RiscOsFileMeta(type=ff8 date=1992-05-18 17:22:53.220000 attr=3)
-!FontPrint/!Sprites RiscOsFileMeta(type=ff9 date=1991-05-31 14:04:57 attr=3)
-!FontPrint/!Sprites22 RiscOsFileMeta(type=ff9 date=1991-05-31 14:10:06 attr=3)
-!FontPrint/!Sprites23 RiscOsFileMeta(type=ff9 date=1991-05-31 14:20:40 attr=3)
+!FontPrint.!Help RiscOsFileMeta(type=fff date=1992-05-11 10:01:45 attr=3)
+!FontPrint.!Run RiscOsFileMeta(type=feb date=1992-05-14 16:18:01 attr=3)
+!FontPrint.!RunImage RiscOsFileMeta(type=ff8 date=1992-05-18 17:22:53.220000 attr=3)
+!FontPrint.!Sprites RiscOsFileMeta(type=ff9 date=1991-05-31 14:04:57 attr=3)
+!FontPrint.!Sprites22 RiscOsFileMeta(type=ff9 date=1991-05-31 14:10:06 attr=3)
+!FontPrint.!Sprites23 RiscOsFileMeta(type=ff9 date=1991-05-31 14:20:40 attr=3)
 ```
 
 If you only want to convert some of the contents of the disc to a ZIP, you can specify one
@@ -118,15 +119,30 @@ or more paths from the disc image to archive:
 $ riscos-conv d2z ~/projects/archimedes-live/dlcache/riscos3-app1.adf app1.zip \!Squash DrawDemo
 file type DISC_IMAGE
 ADFS Disc - App1
-!Squash/!Boot RiscOsFileMeta(type=feb date=1991-05-29 09:57:02 attr=3)
-!Squash/!Help RiscOsFileMeta(type=fff date=1992-05-19 15:25:35 attr=3)
-!Squash/!Run RiscOsFileMeta(type=feb date=1992-05-14 16:44:00 attr=3)
-!Squash/!RunImage RiscOsFileMeta(type=ff8 date=1992-05-19 15:55:22.800000 attr=3)
-!Squash/!Sprites RiscOsFileMeta(type=ff9 date=1991-06-12 12:07:32 attr=3)
-!Squash/!Sprites22 RiscOsFileMeta(type=ff9 date=1991-06-12 12:08:13 attr=3)
-!Squash/!Sprites23 RiscOsFileMeta(type=ff9 date=1991-06-12 12:08:45 attr=3)
-!Squash/Messages RiscOsFileMeta(type=fff date=1992-05-19 15:25:45 attr=3)
-!Squash/Squash RiscOsFileMeta(type=ff8 date=1992-05-19 15:54:59.330000 attr=3)
-!Squash/Templates RiscOsFileMeta(type=fec date=1992-05-14 18:46:04 attr=3)
+!Squash.!Boot RiscOsFileMeta(type=feb date=1991-05-29 09:57:02 attr=3)
+!Squash.!Help RiscOsFileMeta(type=fff date=1992-05-19 15:25:35 attr=3)
+!Squash.!Run RiscOsFileMeta(type=feb date=1992-05-14 16:44:00 attr=3)
+!Squash.!RunImage RiscOsFileMeta(type=ff8 date=1992-05-19 15:55:22.800000 attr=3)
+!Squash.!Sprites RiscOsFileMeta(type=ff9 date=1991-06-12 12:07:32 attr=3)
+!Squash.!Sprites22 RiscOsFileMeta(type=ff9 date=1991-06-12 12:08:13 attr=3)
+!Squash.!Sprites23 RiscOsFileMeta(type=ff9 date=1991-06-12 12:08:45 attr=3)
+!Squash.Messages RiscOsFileMeta(type=fff date=1992-05-19 15:25:45 attr=3)
+!Squash.Squash RiscOsFileMeta(type=ff8 date=1992-05-19 15:54:59.330000 attr=3)
+!Squash.Templates RiscOsFileMeta(type=fec date=1992-05-14 18:46:04 attr=3)
 DrawDemo RiscOsFileMeta(type=aff date=1991-09-06 16:19:36 attr=3)
 ```
+
+## Running tests
+
+```
+$ pip install -e '.[test]'
+$ pytest
+```
+
+The ArcFS and Spark tests generate their own archives (see `tests/arcfs_builder.py` and
+`tests/spark_builder.py`). Some optional tests
+are skipped unless configured:
+
+* `NSPARK=/path/to/nspark` (or `nspark` on the `PATH`) - check generated ArcFS and Spark archives extract correctly with nspark
+* `RISCOS_CONV_ARCFS_SAMPLE=/path/to/archive` - extract a real ArcFS archive and check CRCs
+* `RISCOS_CONV_SPARK_SAMPLE=/path/to/archive` - extract a real Spark archive and check CRCs

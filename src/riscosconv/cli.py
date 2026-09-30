@@ -13,10 +13,12 @@ from typing import IO, Optional
 from zipfile import ZipFile, is_zipfile
 
 from .adfslib import ADFS_exception, ADFSdirectory, ADFSdisc, ADFSfile
+from .arcfs import ArcFSArchive
 from .filetypes import RISC_OS_FILETYPES
-from .nspark import NSparkArchive
 from .riscos_zip import RiscOsZip, convert_disc_to_zip, get_riscos_zipinfo
 from .ro_file_meta import DiscImageBase, FileMeta, RiscOsFileMeta
+from .riscos_path import PureRiscOsPath, as_ro_path
+from .spark import SparkArchive
 from .sprites import SpriteArea, list_sprites
 
 DISC_IM_EXTS = ('.adf','.adl')
@@ -39,32 +41,39 @@ def has_disc_image_ext(filename: str) -> bool:
 class RiscOsAdfsDisc(DiscImageBase):
     def __init__(self, fd):
         self.disc = ADFSdisc(fd)
+        # Key entries by parsed RISC OS path. adfslib stores a '.' in a
+        # leafname as '/', which the old code round-tripped by string; going
+        # through PureRiscOsPath splits it, so lookups must use the same
+        # parsed keys the listing yields, not re-derived adfslib paths.
+        self._entries = {}
+        self._build_entries(self.disc.files, PureRiscOsPath())
+
+    def _build_entries(self, files, path):
+        for f in files:
+            # '.' in an on-disc leafname is stored as '/'
+            name = f.name.replace('/', '.')
+            if isinstance(f, ADFSfile):
+                self._entries.setdefault(path / name, f)
+            else:
+                self._build_entries(f.files, path / name)
 
     def __repr__(self):
         return f'ADFS Disc - {self.disc.disc_name}'
-    
+
     @property
     def disc_name(self):
         return self.disc.disc_name
-    
-    def list(self, files=None, path=''):
-        if files is None:
-            files = self.disc.files
-        for f in files:
-            if isinstance(f, ADFSfile):
-                ro_meta = RiscOsFileMeta(f.load_address, f.execution_address)
-                ds = ro_meta.datestamp
-                if not ds:
-                    ds = datetime.now()
-                # TODO: properly support/convert RISC OS paths via new pathlib type
-                filename = f.name.replace('/', '.')
-                full_path = (path + '/' + filename).removeprefix('/')
-                yield full_path, FileMeta(ro_meta, ds, f.length)
-            elif isinstance(f, ADFSdirectory):
-                yield from self.list(f.files, path + '/' + f.name)
-            
+
+    def list(self, files=None, path=PureRiscOsPath()):
+        for path, f in self._entries.items():
+            ro_meta = RiscOsFileMeta(f.load_address, f.execution_address)
+            ds = ro_meta.datestamp
+            if not ds:
+                ds = datetime.now()
+            yield path, FileMeta(ro_meta, ds, f.length)
+
     def get_file_meta(self, path):
-        f = self.disc.get_path(path)
+        f = self._entries[as_ro_path(path)]
         ro_meta = RiscOsFileMeta(f.load_address, f.execution_address)
         ds = ro_meta.datestamp
         if not ds:
@@ -72,11 +81,11 @@ class RiscOsAdfsDisc(DiscImageBase):
         return FileMeta(ro_meta, ds, f.length)
 
     def open(self, path) -> IO[bytes]:
-        f = self.disc.get_path(path)
+        f = self._entries.get(as_ro_path(path))
         if not f:
             return None
         return BytesIO(f.data)
-    
+
 
 
 def load_ro_filetypes():
@@ -135,7 +144,7 @@ def list_disc(disc: DiscImageBase):
 def many_files_in_root(disc: DiscImageBase):
     files_in_root = set()
     for file_name, meta in disc.list():
-        first = file_name.split('/', 1).pop(0)
+        first = as_ro_path(file_name).parts[0]
         files_in_root.add(first)
     return len(files_in_root) > 1
 
@@ -146,7 +155,7 @@ def extract_riscos_disc(disc: DiscImageBase, path='.'):
     print(f'Extracting to {path}:')
     for filename, meta in disc.list():
         ro_meta = meta.ro_meta
-        extract_path = os.path.join(path, filename + ro_meta.hostfs_file_ext())
+        extract_path = os.path.join(path, as_ro_path(filename).as_zipname() + ro_meta.hostfs_file_ext())
         print(' ', extract_path)
         extract_dir = os.path.dirname(extract_path)
         os.makedirs(extract_dir, exist_ok=True)
@@ -285,8 +294,8 @@ HandlerFns = namedtuple('HandlerFns', ['list', 'extract', 'create'], defaults=(N
 HANDLER_FNS = {
     KnownFileType.DISC_IMAGE: RiscOsAdfsDisc,
     KnownFileType.RISC_OS_ZIP: RiscOsZip,
-    KnownFileType.ARCFS_ARCHIVE: NSparkArchive,
-    KnownFileType.SPARK_ARCHIVE: NSparkArchive,
+    KnownFileType.ARCFS_ARCHIVE: ArcFSArchive,
+    KnownFileType.SPARK_ARCHIVE: SparkArchive,
     KnownFileType.RISC_OS_SPRITES: SpriteArea
 }
 
