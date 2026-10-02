@@ -1,30 +1,33 @@
 # riscos-conv
 
-A Python utility to list, extract and create some RISC OS file formats.
+A Python command-line utility and library to list, extract and create a number of RISC OS file formats.
 
 Supported formats:
 
-* ADFS disc images (list/extract)
-* RISC OS ZIP/SparkFS (list/extract/create)
-* Spark/ArcFS (list/extract)
-* RISC OS Sprite files (list/extract)
+|Format|Identify|List|Extract|Create|
+|------|--------|----|-------|------|
+|ADFS disc image (.adf, .adl)|✓|✓|✓| |
+|RISC OS ZIP/SparkFS archive (.zip)|✓|✓|✓|✓|
+|Spark archive (.spk) |✓|✓|✓| |
+|ArcFS archive (.arc) |✓|✓|✓| |
+|RISC OS ISO 9660 CD image (.iso)|✓|✓|✓| |
+|RISC OS Sprite file * |✓|✓|✓ |
+|HFE disc image (.hfe)|✓| | | |
 
-ArcFS and Spark archives are handled natively (based on the reference implementation in nspark), so no
-external tools are needed.
 Currently only Sprite files created on RISC OS 3.1 and earlier are supported.
 
 ## Usage
 
 `usage: riscos-conv [-h] [-d DIR] [-a] [{x,l,c,d2z}] file [files ...]`
 
-* `x` - Extract archive/disc image/sprite file
-* `l` - List archive/disc image/sprite file
-* `c` - create a RISC OS-compatible ZIP file
+* `x` - Extract
+* `l` - List 
+* `c` - create 
 * `d2z` - convert an ADF disc image to a RISC OS ZIP file
 
 ### Listing
 
-List a disc/archive file:
+Files are listed with the RISC OS dot-separated path style.
 
 ```
 $ riscos-conv l riscos3-app2.adf 
@@ -54,7 +57,7 @@ SpriteArea(num_sprites=110 next_free=0x85e8)
 
 ### Extracting files
 
-For ADF disc images, this will create and extract into a directory with the name of the disc.
+For ADF disc images, this will create and extract into a directory with the name of the disc. Files are extracted with the RISC OS file type appended in a way that is compatible with Arculator's HostFS.
 
 ```
 $ riscos-conv x ../archimedes-live/dlcache/riscos3-app2.adf 
@@ -69,7 +72,7 @@ Extracting to ./App2:
   ...
 ```
 
-Extracting sprites:
+Sprites are extracted to PNG files.
 
 ```
 $ riscos-conv x \!Sprites22\,ff9 
