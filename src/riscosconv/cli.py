@@ -8,15 +8,16 @@ from zipfile import ZipFile
 
 from .adfs_disc import RiscOsAdfsDisc
 from .adfslib import ADFSdisc
+from .arcfs import ArcFSArchive
 from .create import create_riscos_zipfile
 from .filetypes import RISC_OS_FILETYPES
 from .indentify import KnownFileType, has_disc_image_ext, has_iso_ext, identify_file
-from .nspark import NSparkArchive
 from .riscos_iso import RiscOsIsoDisc
+from .riscos_path import as_ro_path
 from .riscos_zip import RiscOsZip, convert_disc_to_zip, zip_member_to_tempfile
 from .ro_file_meta import DiscImageBase
+from .spark import SparkArchive
 from .sprites import SpriteArea, list_sprites
-
 
 def list_disc(disc: DiscImageBase):
     for file_name, file_meta in disc.list():
@@ -39,7 +40,7 @@ def list_disc(disc: DiscImageBase):
 def many_files_in_root(disc: DiscImageBase):
     files_in_root = set()
     for file_name, meta in disc.list():
-        first = file_name.split('/', 1).pop(0)
+        first = as_ro_path(file_name).parts[0]
         files_in_root.add(first)
     return len(files_in_root) > 1
 
@@ -50,7 +51,7 @@ def extract_riscos_disc(disc: DiscImageBase, path='.'):
     print(f'Extracting to {path}:')
     for filename, meta in disc.list():
         ro_meta = meta.ro_meta
-        extract_path = os.path.join(path, filename + ro_meta.hostfs_file_ext())
+        extract_path = os.path.join(path, as_ro_path(filename).as_zipname() + ro_meta.hostfs_file_ext())
         print(' ', extract_path)
         extract_dir = os.path.dirname(extract_path)
         os.makedirs(extract_dir, exist_ok=True)
@@ -110,8 +111,8 @@ HANDLER_FNS = {
     KnownFileType.DISC_IMAGE: RiscOsAdfsDisc,
     KnownFileType.RISC_OS_ISO: RiscOsIsoDisc,
     KnownFileType.RISC_OS_ZIP: RiscOsZip,
-    KnownFileType.ARCFS_ARCHIVE: NSparkArchive,
-    KnownFileType.SPARK_ARCHIVE: NSparkArchive,
+    KnownFileType.ARCFS_ARCHIVE: ArcFSArchive,
+    KnownFileType.SPARK_ARCHIVE: SparkArchive,
     KnownFileType.RISC_OS_SPRITES: SpriteArea
 }
 

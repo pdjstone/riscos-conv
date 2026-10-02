@@ -6,6 +6,7 @@ import pycdlib.dr
 from pycdlib import pycdlibio
 from pycdlib.dr import DirectoryRecord
 
+from .riscos_path import PureRiscOsPath, as_ro_path
 from .ro_file_meta import DiscImageBase, FileMeta, RiscOsFileMeta
 
 # https://stackoverflow.com/a/57208916
@@ -235,8 +236,7 @@ class LenientIsoReader:
         if name.endswith('.') and name.count('.') == 1:
             name = name[:-1]
         # RISC OS long-files discs store entries as NAME/NNN; '/' is a valid
-        # filename char in RISC OS and maps to '.' on extraction.
-        name = name.replace('/', '.')
+        # RISC OS filename char, so the name is left intact.
         if ro_meta and (ro_meta.file_attr & 0x100) and name.startswith('_'):
             name = '!' + name[1:]
         return name
@@ -246,9 +246,9 @@ class LenientIsoReader:
         return self._iter_records(self._read(extent * self.SECTOR, size))
 
     def list(self):
-        stack = [(self._root, '')]
+        stack = [(self._root, ())]
         while stack:
-            head, ro_prefix = stack.pop()
+            head, components = stack.pop()
             for rec in self._dir_records(head):
                 flags = rec[25]
                 ident = self._record_ident(rec)
@@ -258,10 +258,10 @@ class LenientIsoReader:
                 name = self._name(ident, ro_meta)
                 if not name:
                     continue
-                full_ro = f'{ro_prefix}/{name}' if ro_prefix else name
+                full_ro = PureRiscOsPath(*components, name)
                 self._ro_to_rec[full_ro] = rec
                 if flags & 0x02:
-                    stack.append((rec, full_ro))
+                    stack.append((rec, components + (name,)))
                     continue
                 if ro_meta is None:
                     # Files without the extension have no RISC OS metadata to
@@ -272,7 +272,7 @@ class LenientIsoReader:
                 yield full_ro, FileMeta(ro_meta, ds, size)
 
     def open(self, path):
-        rec = self._ro_to_rec.get(path)
+        rec = self._ro_to_rec.get(as_ro_path(path))
         if rec is None:
             return None
         extent, size, _ = self._record_info(rec)
@@ -332,7 +332,6 @@ class RiscOsIsoDisc(DiscImageBase):
             # restore it if the metadata flags it and the name has a '_'.
             if ro_meta and (ro_meta.file_attr & 0x100) and name.startswith('_') and not name.startswith('!'):
                 name = '!' + name[1:]
-            name = name.replace('/', '.')
             return name, ro_meta is not None and bool(ro_meta.file_attr & 0x100)
         # Plain ISO9660: ASCII, uppercase, 8.3, with ';VER' version suffix.
         name = ident.decode('ascii', 'replace')
@@ -342,8 +341,7 @@ class RiscOsIsoDisc(DiscImageBase):
         if name.endswith('.') and name.count('.') == 1:
             name = name[:-1]
         # RISC OS long-files discs store entries as NAME/NNN; '/' is a valid
-        # filename char in RISC OS and maps to '.' on extraction.
-        name = name.replace('/', '.')
+        # RISC OS filename char, so the name is left intact.
         if ro_meta and (ro_meta.file_attr & 0x100) and name.startswith('_'):
             name = '!' + name[1:]
         return name, bool(ro_meta and (ro_meta.file_attr & 0x100))
@@ -356,7 +354,7 @@ class RiscOsIsoDisc(DiscImageBase):
         seen = set()
         root = self.iso.joliet_vd.root_directory_record() if self.use_joliet \
             else self.iso.pvd.root_directory_record()
-        yield from self._walk_dir(root, '', seen)
+        yield from self._walk_dir(root, PureRiscOsPath(''), seen)
         self._indexed = True
 
     def _walk_dir(self, dir_record, ro_prefix, seen):
@@ -371,7 +369,7 @@ class RiscOsIsoDisc(DiscImageBase):
             name, bang = self._rec_name(record)
             if not name:
                 continue
-            full_ro = (ro_prefix + '/' + name).lstrip('/') if ro_prefix else name
+            full_ro = ro_prefix / name
             if record.is_dir():
                 self._ro_to_iso[full_ro] = record
                 yield from self._walk_dir(record, full_ro, seen)
@@ -386,15 +384,14 @@ class RiscOsIsoDisc(DiscImageBase):
             yield full_ro, FileMeta(ro_meta, ds, record.data_length)
 
     def get_file_meta(self, path):
-        is_paths = {name for name, _ in self.list()}
-        if path not in is_paths:
-            return None
+        path = as_ro_path(path)
         for name, meta in self.list():
             if name == path:
                 return meta
         return None
 
     def open(self, path):
+        path = as_ro_path(path)
         if not self._indexed:
             list(self.list())
         if self._raw is not None:

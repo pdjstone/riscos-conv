@@ -7,6 +7,7 @@ from pycdlib.pycdlibexception import PyCdlibInvalidISO
 
 from riscosconv.indentify import KnownFileType, identify_file
 from riscosconv.riscos_iso import RiscOsIsoDisc, is_riscos_iso9660
+from riscosconv.riscos_path import PureRiscOsPath, as_ro_path
 
 
 class TestRiscOsIso:
@@ -67,16 +68,16 @@ class TestRiscOsIso:
         paths = [(p, m) for p, m in disc.list()]
         names = [p for p, _ in paths]
         # 0x100 attribute prefixes a '_' name with '!'
-        assert names == ['README', '!ANIM', '!Boot']
+        assert names == [PureRiscOsPath('README'), PureRiscOsPath('!ANIM'), PureRiscOsPath('!Boot')]
 
-        by_name = dict(paths)
-        assert by_name['README'].ro_meta.filetype == 0x003
-        assert by_name['!Boot'].ro_meta.filetype == 0x0d4
+        by_name = {as_ro_path(p): m for p, m in paths}
+        assert by_name[as_ro_path('README')].ro_meta.filetype == 0x003
+        assert by_name[as_ro_path('!Boot')].ro_meta.filetype == 0x0d4
         # Non-&FFF00000 entries have no filetype; hostfs ext falls back to load/exec.
-        assert by_name['!ANIM'].ro_meta.filetype is None
-        assert by_name['!ANIM'].ro_meta.load_addr == 0x12345678
-        assert by_name['!ANIM'].ro_meta.exec_addr == 0x87654321
-        assert by_name['!ANIM'].ro_meta.hostfs_file_ext() == ',12345678-87654321'
+        assert by_name[as_ro_path('!ANIM')].ro_meta.filetype is None
+        assert by_name[as_ro_path('!ANIM')].ro_meta.load_addr == 0x12345678
+        assert by_name[as_ro_path('!ANIM')].ro_meta.exec_addr == 0x87654321
+        assert by_name[as_ro_path('!ANIM')].ro_meta.hostfs_file_ext() == ',12345678-87654321'
 
     def test_open_extracts_file(self, iso_bytes):
         disc = RiscOsIsoDisc(io.BytesIO(iso_bytes))
@@ -95,16 +96,18 @@ class TestRiscOsIso:
         assert disc.open('nope') is None
         assert disc.get_file_meta('nope') is None
 
-    def test_slash_in_iso_name_maps_to_dot(self):
+    def test_slash_in_iso_name_is_a_leafname(self):
         # RISC OS long-files discs store entries as NAME/NNN; '/' is a valid
-        # RISC OS filename char and maps to '.' for listing/extraction.
+        # RISC OS filename char, so it is kept in the path (unlike a '.' in a
+        # zip leafname, which would map to '/').
         entries = [(b'BLOODS/000', b'data', ro_load(0x003), 1, 3)]
         disc = RiscOsIsoDisc(io.BytesIO(build_iso(entries)))
         names = [p for p, _ in disc.list()]
-        assert names == ['BLOODS.000']
-        with disc.open('BLOODS.000') as f:
+        assert names == [PureRiscOsPath('BLOODS/000')]
+        assert names[0].as_zipname() == 'BLOODS.000'
+        with disc.open('BLOODS/000') as f:
             assert f.read() == b'data'
-        assert disc.get_file_meta('BLOODS.000').ro_meta.filetype == 0x003
+        assert disc.get_file_meta('BLOODS/000').ro_meta.filetype == 0x003
 
     def test_multiple_slash_names_list(self):
         entries = [
@@ -114,7 +117,9 @@ class TestRiscOsIso:
         ]
         disc = RiscOsIsoDisc(io.BytesIO(build_iso(entries)))
         names = sorted(p for p, _ in disc.list())
-        assert names == ['BLOODS.000', 'BLOODS.001', 'WOLFEN.002']
+        assert names == [
+            PureRiscOsPath('BLOODS/000'), PureRiscOsPath('BLOODS/001'), PureRiscOsPath('WOLFEN/002'),
+        ]
 
     def test_pycdlib_rejects_image_falls_back_to_lenient_walker(self, iso_bytes):
         # Corrupt the big-endian path table so pycdlib refuses to open the
@@ -124,7 +129,7 @@ class TestRiscOsIso:
             iso = pycdlib.PyCdlib()
             iso.open_fp(io.BytesIO(img))
         disc = RiscOsIsoDisc(io.BytesIO(img))
-        names = sorted(p for p, _ in disc.list())
+        names = sorted(str(p) for p, _ in disc.list())
         assert names == ['!ANIM', '!Boot', 'README']
         with disc.open('README') as f:
             assert f.read() == b'hello world'

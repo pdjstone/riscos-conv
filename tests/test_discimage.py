@@ -6,6 +6,7 @@ from helpers import build_adf
 from riscosconv.adfs_disc import RiscOsAdfsDisc
 from riscosconv.adfslib import ADFSdirectory, ADFSdisc, ADFSfile
 from riscosconv.indentify import KnownFileType, identify_discimage
+from riscosconv.riscos_path import PureRiscOsPath
 
 
 class TestDiscImages:
@@ -109,23 +110,25 @@ class TestOldFormatNameHighBits:
         ]
         disc = RiscOsAdfsDisc(io.BytesIO(build_adf(entries)))
         paths = [p for p, _ in disc.list()]
-        assert paths == ['!Boot', 'DoubleTake']
+        assert paths == [PureRiscOsPath('!Boot'), PureRiscOsPath('DoubleTake')]
 
-    def test_slash_in_name_maps_to_dot_in_list(self):
-        # '/' is a valid RISC OS filename char inside a directory; the RISC OS
-        # view exposes it as '.' (the path separator).
+    def test_slash_in_name_is_a_leafname(self):
+        # '/' is a valid RISC OS filename char: an on-disc name like
+        # 'BLOODS/000' lists as a single RISC OS leafname, and extraction to a
+        # host filesystem escapes the '/' as '.';
         disc = RiscOsAdfsDisc(io.BytesIO(
             build_adf([(b'BLOODS/000', 0x1000, 0x1000, 4, 100, 0)])))
         paths = [p for p, _ in disc.list()]
-        assert paths == ['BLOODS.000']
+        assert paths == [PureRiscOsPath('BLOODS/000')]
+        assert paths[0].as_zipname() == 'BLOODS.000'
 
-    def test_slash_name_accessible_via_dot_path(self):
-        # list() maps '/' -> '.', so get_file_meta/open must accept the '.' form.
+    def test_slash_name_accessible_via_slash_path(self):
+        # the '/' -form is the RISC OS path, so get_file_meta/open use it
         disc = RiscOsAdfsDisc(io.BytesIO(
             build_adf([(b'BLOODS/000', 0x1000, 0x1000, 4, 100, 0)])))
-        meta = disc.get_file_meta('BLOODS.000')
+        meta = disc.get_file_meta('BLOODS/000')
         assert meta.file_size == 4
-        with disc.open('BLOODS.000') as f:
+        with disc.open('BLOODS/000') as f:
             assert f.read() == b'\x00' * 4
 
     def test_multiple_slash_names_survive_directory_walk(self):
@@ -135,4 +138,4 @@ class TestOldFormatNameHighBits:
         ]
         disc = RiscOsAdfsDisc(io.BytesIO(build_adf(entries)))
         paths = sorted(p for p, _ in disc.list())
-        assert paths == ['BLOODS.000', 'WOLFEN.002']
+        assert paths == [PureRiscOsPath('BLOODS/000'), PureRiscOsPath('WOLFEN/002')]
