@@ -1,0 +1,98 @@
+name: Publish
+
+# Fires when a v* tag is pushed. Note this means pushing a version tag now
+# publishes to PyPI automatically -- see README / repo setup for the required
+# PyPI trusted-publisher configuration. Until that is configured the publish
+# job fails without publishing anything, so this is inert by default.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install
+        run: python -m pip install -e '.[test]'
+
+      # A tag can point at a commit CI never saw, so re-run the suite here.
+      - name: Test
+        run: python -m pytest -q
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Check the version matches the tag
+        run: |
+          python - <<'PY'
+          import glob
+          import os
+          import subprocess
+          import zipfile
+
+          wheels = glob.glob("dist/*.whl")
+          assert len(wheels) == 1, f"expected one wheel, got {wheels}"
+          with zipfile.ZipFile(wheels[0]) as z:
+              metadata = next(
+                  n for n in z.namelist() if n.endswith(".dist-info/METADATA")
+              )
+              version = next(
+                  line.split(": ", 1)[1]
+                  for line in z.read(metadata).decode().splitlines()
+                  if line.startswith("Version: ")
+              )
+
+          scm_version = subprocess.run(
+              ["python", "-m", "setuptools_scm"],
+              capture_output=True, text=True, check=True,
+          ).stdout.strip()
+          assert version == scm_version, (
+              f"wheel metadata says {version!r}, setuptools-scm says {scm_version!r}"
+          )
+
+          # Refuse to publish anything that is not exactly the tag: a .dev or
+          # local (+g<sha>) suffix here would mean the tag is not on HEAD.
+          tag = os.environ.get("GITHUB_REF_NAME", "")
+          if tag.startswith("v"):
+              assert version == tag[1:], (
+                  f"tag {tag!r} but wheel version is {version!r}"
+              )
+              print(f"OK: version {version} matches tag {tag}")
+          PY
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/riscos-conv
+    permissions:
+      id-token: write # trusted publishing (OIDC) -- no API token stored
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
