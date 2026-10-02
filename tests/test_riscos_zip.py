@@ -43,11 +43,11 @@ def test_dotted_leafname_entry():
     # encoding, since '.' can't appear in a RISC OS leafname. The entry must
     # list and open via the '/' -form RISC OS path.
     ro_meta = RiscOsFileMeta.from_datestamp(0)
-    buf = make_zip([('!Horizon/music.s3m', b'tune', ro_meta)])
+    buf = make_zip([('!Game/music.s3m', b'tune', ro_meta)])
     archive = RiscOsZip(buf)
     [(path, _)] = list(archive.list())
-    assert path == PureRiscOsPath('!Horizon.music/s3m')
-    with archive.open('!Horizon.music/s3m') as f:
+    assert path == PureRiscOsPath('!Game.music/s3m')
+    with archive.open('!Game.music/s3m') as f:
         assert f.read() == b'tune'
 
 

@@ -112,11 +112,11 @@ def test_joinpath_with_absolute_replaces():
 
 @pytest.mark.parametrize('zipname, ro_path', [
     ('!App/!RunImage', '!App.!RunImage'),
-    ('!WorkTop/!Boot', '!WorkTop.!Boot'),
+    ('!Util/!Boot', '!Util.!Boot'),
     ('ReadMe', 'ReadMe'),
     ('!App/Resources/UK/Messages', '!App.Resources.UK.Messages'),
     # a '.' in a zip leafname encodes a '/' that the host FS could not store
-    ('!Horizon/music.s3m', '!Horizon.music/s3m'),
+    ('!SomeGame/music.s3m', '!SomeGame.music/s3m'),
 ])
 def test_from_zipname(zipname, ro_path):
     assert P.from_zipname(zipname) == P(ro_path)
@@ -148,12 +148,6 @@ def test_slash_is_a_valid_leafname_char():
     assert P('music/s3m').is_valid_leafname()
     assert P('!App.music/s3m').parts == ('!App', 'music/s3m')
     assert P('!App.music/s3m').name == 'music/s3m'
-
-
-def test_slash_leaf_escapes_to_dot_for_zip():
-    p = P('!Horizon.music/s3m')
-    assert p.as_zipname() == '!Horizon/music.s3m'
-    assert P.from_zipname(p.as_zipname()) == p
 
 
 def test_root_zipname_is_empty():

@@ -114,28 +114,28 @@ class TestOldFormatNameHighBits:
 
     def test_slash_in_name_is_a_leafname(self):
         # '/' is a valid RISC OS filename char: an on-disc name like
-        # 'BLOODS/000' lists as a single RISC OS leafname, and extraction to a
+        # 'INDEX/HTM' lists as a single RISC OS leafname, and extraction to a
         # host filesystem escapes the '/' as '.';
         disc = RiscOsAdfsDisc(io.BytesIO(
-            build_adf([(b'BLOODS/000', 0x1000, 0x1000, 4, 100, 0)])))
+            build_adf([(b'INDEX/HTM', 0x1000, 0x1000, 4, 100, 0)])))
         paths = [p for p, _ in disc.list()]
-        assert paths == [PureRiscOsPath('BLOODS/000')]
-        assert paths[0].as_zipname() == 'BLOODS.000'
+        assert paths == [PureRiscOsPath('INDEX/HTM')]
+        assert paths[0].as_zipname() == 'INDEX.HTM'
 
     def test_slash_name_accessible_via_slash_path(self):
         # the '/' -form is the RISC OS path, so get_file_meta/open use it
         disc = RiscOsAdfsDisc(io.BytesIO(
-            build_adf([(b'BLOODS/000', 0x1000, 0x1000, 4, 100, 0)])))
-        meta = disc.get_file_meta('BLOODS/000')
+            build_adf([(b'INDEX/HTM', 0x1000, 0x1000, 4, 100, 0)])))
+        meta = disc.get_file_meta('INDEX/HTM')
         assert meta.file_size == 4
-        with disc.open('BLOODS/000') as f:
+        with disc.open('INDEX/HTM') as f:
             assert f.read() == b'\x00' * 4
 
     def test_multiple_slash_names_survive_directory_walk(self):
         entries = [
-            (b'BLOODS/000', 0x1000, 0x1000, 4, 100, 0),
-            (b'WOLFEN/002', 0x1000, 0x1000, 4, 150, 0),
+            (b'INDEX/HTM', 0x1000, 0x1000, 4, 100, 0),
+            (b'PHOTO/GIF', 0x1000, 0x1000, 4, 150, 0),
         ]
         disc = RiscOsAdfsDisc(io.BytesIO(build_adf(entries)))
         paths = sorted(p for p, _ in disc.list())
-        assert paths == [PureRiscOsPath('BLOODS/000'), PureRiscOsPath('WOLFEN/002')]
+        assert paths == [PureRiscOsPath('INDEX/HTM'), PureRiscOsPath('PHOTO/GIF')]
