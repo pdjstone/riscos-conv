@@ -15,12 +15,8 @@ classifiers = [
   "Environment :: Console",
 ]
 dependencies = [
-  "toml",
-  "tomlkit",
-  "jinja2",
-  "requests",
   "pillow",
-  "pycdlib"
+  "pycdlib==1.21.0" # fixed due to monkey-patching
 ]
 
 [project.scripts]
