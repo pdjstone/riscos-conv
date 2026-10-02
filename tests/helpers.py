@@ -2,11 +2,114 @@ import io
 import struct
 from zipfile import ZipFile
 
+import pycdlib
+import pycdlib.dr as drmod
+
 from riscosconv.riscos_zip import zip_extra
 from riscosconv.ro_file_meta import RiscOsFileMeta
 
 # An S-format ADFS disc is 40 tracks x 16 sectors x 256 bytes.
 ADF_S_SIZE = 40 * 16 * 256
+
+
+# -- Joliet test-image writer -------------------------------------------------
+# A RISC OS disc mastered for both trees stores the RISC OS name in the plain
+# ISO9660 tree (type separator '/' as in 'COVER/JPG') but Joliet forbids '/',
+# so the same file appears as 'Cover.jpg'.  pycdlib cannot put a '/' in an ISO9660
+# identifier, so a plain tree with '/' names cannot be produced by pycdlib; the
+# test helper instead masters only the Joliet view (which is what RiscOsIsoDisc
+# reads when use_joliet is set) and injects the ARCHIMEDES system-use block on
+# write, so the listed RISC OS paths come from Joliet names.
+def _install_joliet_meta() -> None:
+    """Extend the write path so a record tagged ._ro_meta gets an ARCHIMEDES
+    system-use block spliced in after its identifier."""
+    base = drmod.DirectoryRecord
+    if getattr(base, '_joliet_meta_slot', False):
+        return
+    drmod.DirectoryRecord = type(
+        'DirectoryRecord',
+        (base,),
+        {'__slots__': ('_ro_meta',), '_joliet_meta_slot': True})
+    _orig_record = base.record
+
+    def record_with_arch(self):
+        out = _orig_record(self)
+        meta = getattr(self, '_ro_meta', None)
+        if meta is None:
+            return out
+        pad = (self._FMT_SIZE + self.len_fi) % 2
+        insert_at = self._FMT_SIZE + self.len_fi + pad
+        out = bytearray(out)
+        out[insert_at:insert_at] = meta
+        out[0] += len(meta)
+        return bytes(out)
+
+    base.record = record_with_arch
+
+
+def build_joliet_iso(entries) -> bytes:
+    """Master a Joliet ISO whose files carry ARCHIMEDES metadata.
+
+    ``entries`` is a list of ``(name, data, load, exec, attrs)`` where ``name``
+    is the '/' separator-separated Joliet path stored on disc (both the disc
+    root and nested directories are supported), e.g. ``'Cover.jpg'`` for a root
+    leaf whose RISC OS name is ``'Cover/jpg'`` or ``'AITD/Docs/Cover.jpg'`` for
+    the same leaf under two directories.  The plain ISO9660 tree exists
+    (pycdlib's 8.3 translation of the name, with '!' mapped to '_') but carries
+    no ARCHIMEDES block, mirroring discs where only the Joliet view is usable.
+    """
+    _install_joliet_meta()
+    iso = pycdlib.PyCdlib()
+    iso.new(interchange_level=3, joliet=3)
+    made_dirs = set()
+    for name, data, load, exec_, attrs in entries:
+        if isinstance(data, str):
+            data = data.encode()
+        # pycdlib cannot create intermediate directories implicitly, so create
+        # each distinct parent chain on both trees first.
+        components = name.split('/')
+        for depth in range(1, len(components)):
+            parent = '/'.join(components[:depth])
+            if parent in made_dirs:
+                continue
+            made_dirs.add(parent)
+            iso.add_directory(iso_path='/' + '/'.join(_iso83(c) for c in components[:depth]),
+                              joliet_path=f'/{parent}')
+        iso_path = '/' + '/'.join(
+            _iso83(p) for p in components) + ';1'
+        iso.add_fp(io.BytesIO(data), len(data), iso_path=iso_path,
+                   joliet_path=f'/{name}')
+        rec = _find_joliet_path(iso.joliet_vd.root_directory_record(), name)
+        rec._ro_meta = b'ARCHIMEDES' + struct.pack('<III', load, exec_, attrs) + b'\0' * 10
+    out = io.BytesIO()
+    iso._write_fp(out, 8192, None, None)
+    return out.getvalue()
+
+
+def _iso83(name):
+    # Plain-tree identifier: 8.3, uppercase, dots/slashes/bangs only in the
+    # forms pycdlib accepts ('!' cannot appear in an ISO9660 filename, so a
+    # disc stores a leading '!' as '_' in the plain tree).
+    return name.replace('.', '_').replace('!', '_').upper()[:8]
+
+
+def _find_joliet_path(root, path):
+    rec = root
+    for comp in path.split('/'):
+        rec = _find_joliet_child(rec, comp)
+    return rec
+
+
+def _find_joliet_child(rec, name):
+    for child in rec.children:
+        if child.file_ident in (b'\x00', b'\x01'):
+            continue
+        try:
+            if child.file_ident.decode('utf-16-be') == name:
+                return child
+        except UnicodeDecodeError:
+            pass
+    raise KeyError(f'no Joliet child {name!r}')
 
 
 def build_adf(entries=None) -> bytes:

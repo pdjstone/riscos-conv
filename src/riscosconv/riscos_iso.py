@@ -195,7 +195,14 @@ class LenientIsoReader:
     navigates from the PVD root record through directory extents directly,
     ignoring path tables and skipping trailing corrupt records, so those discs
     can still be classified, listed and extracted.  Plain ISO9660 only (the
-    rejected discs in the wild are not Joliet)."""
+    rejected discs in the wild are not Joliet).
+
+    Currently required by these discs in the archive:
+      - Apps/P/PhotoDesk/Photodesk 3.04 (2000)(Photodesk Ltd).iso.zip
+      - Apps/R/Revelation/Revelation 2.50 (1991)(Longman Logotron).iso.zip
+      - Fonts/E/EFF PD Fonts Collection/EFF PD Fonts Collection 1.2
+        (1997)(Electronic Font Foundary).iso.zip
+    """
 
     SECTOR = 2048
 
@@ -235,8 +242,7 @@ class LenientIsoReader:
         name = name.split(';', 1)[0]
         if name.endswith('.') and name.count('.') == 1:
             name = name[:-1]
-        # RISC OS long-files discs store entries as NAME/NNN; '/' is a valid
-        # RISC OS filename char, so the name is left intact.
+        name = name.replace('.', '/')
         if ro_meta and (ro_meta.file_attr & 0x100) and name.startswith('_'):
             name = '!' + name[1:]
         return name
@@ -328,6 +334,8 @@ class RiscOsIsoDisc(DiscImageBase):
                 name = ident.decode('utf-16-be')
             except UnicodeDecodeError:
                 name = ident.decode('latin-1', 'replace')
+           
+            name = name.replace('.', '/')
             # Joliet names may still carry the '!' for this extension; ensure we
             # restore it if the metadata flags it and the name has a '_'.
             if ro_meta and (ro_meta.file_attr & 0x100) and name.startswith('_') and not name.startswith('!'):
@@ -340,8 +348,8 @@ class RiscOsIsoDisc(DiscImageBase):
         # above leaves a dangling '.' with no real extension behind.
         if name.endswith('.') and name.count('.') == 1:
             name = name[:-1]
-        # RISC OS long-files discs store entries as NAME/NNN; '/' is a valid
-        # RISC OS filename char, so the name is left intact.
+
+        name = name.replace('.', '/')
         if ro_meta and (ro_meta.file_attr & 0x100) and name.startswith('_'):
             name = '!' + name[1:]
         return name, bool(ro_meta and (ro_meta.file_attr & 0x100))

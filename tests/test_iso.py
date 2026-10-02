@@ -2,7 +2,7 @@ import io
 
 import pycdlib
 import pytest
-from helpers import build_iso, make_zip, ro_load
+from helpers import build_iso, build_joliet_iso, make_zip, ro_load
 from pycdlib.pycdlibexception import PyCdlibInvalidISO
 
 from riscosconv.indentify import KnownFileType, identify_file
@@ -100,25 +100,25 @@ class TestRiscOsIso:
         # RISC OS long-files discs store entries as NAME/NNN; '/' is a valid
         # RISC OS filename char, so it is kept in the path (unlike a '.' in a
         # zip leafname, which would map to '/').
-        entries = [(b'BLOODS/000', b'data', ro_load(0x003), 1, 3)]
+        entries = [(b'INDEX/HTM', b'data', ro_load(0x003), 1, 3)]
         disc = RiscOsIsoDisc(io.BytesIO(build_iso(entries)))
         names = [p for p, _ in disc.list()]
-        assert names == [PureRiscOsPath('BLOODS/000')]
-        assert names[0].as_zipname() == 'BLOODS.000'
-        with disc.open('BLOODS/000') as f:
+        assert names == [PureRiscOsPath('INDEX/HTM')]
+        assert names[0].as_zipname() == 'INDEX.HTM'
+        with disc.open('INDEX/HTM') as f:
             assert f.read() == b'data'
-        assert disc.get_file_meta('BLOODS/000').ro_meta.filetype == 0x003
+        assert disc.get_file_meta('INDEX/HTM').ro_meta.filetype == 0x003
 
     def test_multiple_slash_names_list(self):
         entries = [
-            (b'BLOODS/000', b'bl', ro_load(0x003), 1, 3),
-            (b'BLOODS/001', b'oo', ro_load(0x003), 1, 3),
-            (b'WOLFEN/002', b'ds', ro_load(0x003), 1, 3),
+            (b'INDEX/HTM', b'bl', ro_load(0x003), 1, 3),
+            (b'PHOTO/GIF', b'oo', ro_load(0x003), 1, 3),
+            (b'QUUX/TXT', b'ds', ro_load(0x003), 1, 3),
         ]
         disc = RiscOsIsoDisc(io.BytesIO(build_iso(entries)))
         names = sorted(p for p, _ in disc.list())
         assert names == [
-            PureRiscOsPath('BLOODS/000'), PureRiscOsPath('BLOODS/001'), PureRiscOsPath('WOLFEN/002'),
+            PureRiscOsPath('INDEX/HTM'), PureRiscOsPath('PHOTO/GIF'), PureRiscOsPath('QUUX/TXT'),
         ]
 
     def test_pycdlib_rejects_image_falls_back_to_lenient_walker(self, iso_bytes):
@@ -140,6 +140,76 @@ class TestRiscOsIso:
         img = self.corrupt_be_path_table(iso_bytes)
         assert is_riscos_iso9660(io.BytesIO(img)) is True
         assert identify_file('broken.iso', io.BytesIO(img)) == KnownFileType.RISC_OS_ISO
+
+    # -- Joliet display tree --------------------------------------------------
+
+    def test_joliet_dot_name_lists_as_riscos_slash(self):
+        # A RISC OS disc mastered for both trees stores RISC OS 'Cover/jpg' as
+        # Joliet 'Cover.jpg' (Joliet forbids '/'), so the listed RISC OS path
+        # must map the dot back to a type separator, not nest a directory.
+        disc = RiscOsIsoDisc(io.BytesIO(build_joliet_iso(
+            [('Cover.jpg', b'img', ro_load(0x003), 1, 3)])))
+        names = [(p, m) for p, m in disc.list()]
+        assert [(str(p), m.ro_meta.filetype) for p, m in names] == [
+            ('Cover/jpg', 0x003),
+        ]
+        assert names[0][0].parts == ('Cover/jpg',)
+
+    def test_joliet_nested_dirs_dot_leaf(self):
+        # Krisalis Games CD (2001): the Joliet tree has real directories
+        # AITD/Docs and the file leaf 'Cover.jpg'; the listed RISC OS path is
+        # AITD.Docs.Cover/jpg -- the last dot is the type separator, dirs keep
+        # their dots as genuine separators.
+        disc = RiscOsIsoDisc(io.BytesIO(build_joliet_iso(
+            [('AITD/Docs/Cover.jpg', b'img', ro_load(0x003), 1, 3)])))
+        names = [p for p, _ in disc.list()]
+        assert [str(p) for p in names] == ['AITD.Docs.Cover/jpg']
+        assert names[0].parts == ('AITD', 'Docs', 'Cover/jpg')
+        with disc.open('AITD.Docs.Cover/jpg') as f:
+            assert f.read() == b'img'
+        meta = disc.get_file_meta('AITD.Docs.Cover/jpg')
+        assert meta.ro_meta.filetype == 0x003
+
+    def test_joliet_metadata_round_trip(self):
+        disc = RiscOsIsoDisc(io.BytesIO(build_joliet_iso(
+            [('Manual.txt', b'hello', ro_load(0x0d4), 2, 3)])))
+        by_name = {as_ro_path(p): m for p, m in disc.list()}
+        assert by_name[as_ro_path('Manual/txt')].ro_meta.filetype == 0x0d4
+        assert by_name[as_ro_path('Manual/txt')].ro_meta.datestamp is not None
+        with disc.open('Manual/txt') as f:
+            assert f.read() == b'hello'
+
+    def test_joliet_bang_name_and_mixed_caps(self):
+        # Joliet stores the literal '!' name (the plain tree maps it to '_',
+        # as real discs do); the mixed case survives too.
+        disc = RiscOsIsoDisc(io.BytesIO(build_joliet_iso(
+            [('!RunImage', b'*Run !Boot', ro_load(0x0d4), 2, 0x100 | 3)])))
+        names = [str(p) for p, _ in disc.list()]
+        assert names == ['!RunImage']
+        with disc.open('!RunImage') as f:
+            assert f.read() == b'*Run !Boot'
+
+    def test_joliet_multi_dot_leaf(self):
+        # RISC OS leafnames allow any number of '/' characters; Joliet forbids
+        # '/', so a master stores each as '.'.  A leaf 'A.B.jpg' is genuinely
+        # RISC OS 'A/B/jpg' -- one leafname with two slashes, not nested dirs.
+        disc = RiscOsIsoDisc(io.BytesIO(build_joliet_iso(
+            [('A.B.jpg', b'img', ro_load(0x003), 1, 3)])))
+        names = [p for p, _ in disc.list()]
+        assert [str(p) for p in names] == ['A/B/jpg']
+        assert names[0].parts == ('A/B/jpg',)
+        assert names[0].as_zipname() == 'A.B.jpg'
+
+    def test_joliet_consecutive_slash_leaf(self):
+        # 'a//b' and '////' are valid RISC OS leafnames; Joliet stores them as
+        # 'a..b' and '....' respectively.
+        disc = RiscOsIsoDisc(io.BytesIO(build_joliet_iso(
+            [('a..b', b'd1', ro_load(0x003), 1, 3),
+             ('....', b'd2', ro_load(0x003), 1, 3)])))
+        paths = [(str(p), p) for p, _ in disc.list()]
+        assert sorted(n for n, _ in paths) == ['////', 'a//b']
+        assert dict(paths)['a//b'].as_zipname() == 'a..b'
+        assert dict(paths)['////'].as_zipname() == '....'
 
     def test_archimedes_in_file_content_is_not_a_signature(self):
         # The bare tag string is not reliable: a PC CD-ROM can mention
