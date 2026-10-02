@@ -1250,7 +1250,6 @@ class ADFSdisc(Utilities):
             
             except IOError:
                 print('Less than %i tracks found.' % self.ntracks)
-                f.close()
                 raise ADFS_exception('Less than %i tracks found.' % self.ntracks)
         
         else:
@@ -1271,18 +1270,29 @@ class ADFSdisc(Utilities):
                         t = t + f.read(self.nsectors*self.sector_size)
             
             except IOError:
-            
+
                 print('Less than %i tracks found.' % self.ntracks)
-                f.close()
                 raise ADFS_exception('Less than %i tracks found.' % self.ntracks)
-        
+
+        # A truncated image yields a short buffer here; the catalogue parser
+        # below would otherwise fail with IndexError instead of
+        # ADFS_exception.
+        expected = self.ntracks * self.nsectors * self.sector_size
+        if len(t) < expected:
+            raise ADFS_exception(
+                'Disc image too short: %i bytes, expected %i' % (len(t), expected))
+
         return t
-    
+
     def _read_old_catalogue(self, base):
-    
+
         head = base
         p = 0
-        
+
+        if head >= len(self.sectors):
+            raise ADFS_exception(
+                'Directory offset out of range: %x' % head)
+
         dir_seq = self.sectors[head + p]
         dir_start = self.sectors[head+p+1:head+p+5]
         if dir_start not in self.dir_markers:
@@ -1308,13 +1318,16 @@ class ADFSdisc(Utilities):
                 if (i & 128) != 0:
                     top_set = counter
                 counter = counter + 1
-            
-            name = self._safe(self.sectors[head+p:head+p+10])
-            
+
+            # Old-format ADFS encodes the object attributes in the top bit
+            # of the name characters, so strip bit 7 to recover the name.
+            name_bytes = bytes(b & 0x7f for b in old_name)
+            name = self._safe(name_bytes)
+
             load = self._read_unsigned_word(self.sectors[head+p+10:head+p+14])
             exe = self._read_unsigned_word(self.sectors[head+p+14:head+p+18])
             length = self._read_unsigned_word(self.sectors[head+p+18:head+p+22])
-            
+
             if self.disc_type == 'adD':
                 inddiscadd = 256 * self._str2num(
                     3, self.sectors[head+p+22:head+p+25]
@@ -1410,10 +1423,9 @@ class ADFSdisc(Utilities):
                 self.sectors[tail+self.sector_size-42:tail+self.sector_size-39]
                 )
             
-            dir_title = self._safe(
+            dir_title = \
                 self.sectors[tail+self.sector_size-39:tail+self.sector_size-20]
-                )
-        
+
         if parent == head:
         
             # Use the directory title as the disc name.

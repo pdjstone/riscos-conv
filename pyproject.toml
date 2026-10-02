@@ -6,20 +6,17 @@ authors = [
 ]
 description = "Library and CLI tools to convert to/from RISC OS formats"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 classifiers = [
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
   "Operating System :: OS Independent",
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
   "Environment :: Console",
 ]
 dependencies = [
-  "toml",
-  "tomlkit",
-  "jinja2",
-  "requests",
   "pillow",
-  "pycdlib"
+  "pycdlib==1.21.0" # fixed due to monkey-patching
 ]
 
 [project.scripts]
@@ -34,3 +31,10 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
