@@ -174,7 +174,8 @@ def cli():
             sys.exit(-1)
     
     if args.action == 'd2z':
-        if file_type not in (KnownFileType.DISC_IMAGE, KnownFileType.ARCFS_ARCHIVE, KnownFileType.SPARK_ARCHIVE):
+        if file_type not in (KnownFileType.DISC_IMAGE, KnownFileType.RISC_OS_ISO,
+                             KnownFileType.ARCFS_ARCHIVE, KnownFileType.SPARK_ARCHIVE):
             sys.stderr.write('Must provide disc image to convert to archive\n')
             sys.exit(-1)
         if len(args.files) == 0:
