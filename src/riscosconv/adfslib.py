@@ -784,22 +784,19 @@ class ADFSbigNewMap(ADFSnewMap):
     root_dir_address = 0xc8800
     
     def find_address_from_map(self, addr, begin, entry):
-    
-        # I can't remember where the rationale for this calculation
-        # came from or where the necessary information was obtained.
-        # It probably came from one of the WSS files, such as
-        # Formats.htm or Formats2.htm which imply that the F format
-        # uses 512 byte sectors (see the 0x200 value below) and
-        # indicate that F format uses 4 zones rather than 1.
-        
-        upper = (entry & 0x7f00) >> 8
-        
-        if upper > 1:
-            upper = upper - 1
-        if upper > 3:
-            upper = 3
-        
-        return ((addr - begin) - (upper * 0xc8)) * 0x200
+
+        # The map is split into zones, one per sector, each with its own
+        # 4-byte header (zone 0 also carries the 60-byte disc record, so
+        # the map data starts 0x40 into the first zone). zone_spare bits
+        # are unused between the end of one zone's entries and the end of
+        # the next zone's header, so they must be skipped for every zone
+        # before the one this fragment's map entry sits in. The zone is
+        # implied by the fragment's offset from the map header sector.
+
+        zone = (addr - self.header) // self.sector_size
+
+        return ((addr - begin) - (self.record['zone spare'] // 8) * zone) \
+            * (self.record['bytes per bit'] * 8)
 
 
 class ADFSoldMap(ADFSmap):
@@ -908,14 +905,29 @@ class ADFSdisc(Utilities):
             self.dir_markers = (b'Hugo',)
         
         elif length <= 655360:
-            self.ntracks = 160
-            self.nsectors = 16        # per track
-            self.sector_size = 256    # in bytes
-            # Most L format discs are interleaved, but at least one is
-            # sequenced.
-            interleave = 1
-            self.disc_type = 'adl'
-            self.dir_markers = (b'Hugo',)
+            # An 800K D format image truncated to this length is still a D
+            # format disc, but the length alone says L. Peek for the D root 
+            # directory marker at 0x400; genuine L discs keep their old
+            # catalogue at 0x200, so the only thing there is zeros.
+            adf.seek(0x401, 0)
+            word = adf.read(4)
+            adf.seek(0, 0)
+            if word == b'Hugo' or word == b'Nick':
+                self.ntracks = 80
+                self.nsectors = 10
+                self.sector_size = 1024
+                interleave = 0
+                self.disc_type = 'adD'
+                self.dir_markers = (b'Hugo', b'Nick')
+            else:
+                self.ntracks = 160
+                self.nsectors = 16        # per track
+                self.sector_size = 256    # in bytes
+                # Most L format discs are interleaved, but at least one is
+                # sequenced.
+                interleave = 1
+                self.disc_type = 'adl'
+                self.dir_markers = (b'Hugo',)
         
         elif length <= 819200:
         
@@ -1042,14 +1054,18 @@ class ADFSdisc(Utilities):
             checklist["Expected density (double)"] = 1
         
         # Check the data at the root directory location.
-        
-        adf.seek((record["root dir"] * record["sector size"]) + 1, 0)
-        word = adf.read(4)
-        
-        if word == b"Hugo" or word == b"Nick":
-        
-            # A valid directory identifier was found.
-            checklist["Root directory at location given"] = 1
+
+        # A corrupt disc record can name a root-dir offset far beyond the
+        # image (a 3-byte root * a 2**log2 sector size can overflow the C
+        # offset width on seek); only probe offsets inside the image.
+        root_offset = record["root dir"] * record["sector size"]
+        if 0 <= root_offset + 5 <= len(self.sectors):
+            adf.seek(root_offset + 1, 0)
+            word = adf.read(4)
+            if word == b"Hugo" or word == b"Nick":
+
+                # A valid directory identifier was found.
+                checklist["Root directory at location given"] = 1
         
         if self.verify:
         
@@ -1120,17 +1136,19 @@ class ADFSdisc(Utilities):
             return 'E'
         
         else:
-            print(checklist)
             if self.verify:
-            
+
                 self.verify_log.append(
-                    ( ERROR,
+                    ( WARNING,
                       "Failed to find any information which would help " + \
-                      "determine the disc format." )
+                      "determine the disc format; assuming D format." )
                     )
-            
-            return '?'
-    
+
+            # Erased or corrupt images have no markers anywhere, so parse them 
+            # as D format and yield whatever (possibly empty) catalogue is there 
+            # rather than rejecting the disc outright.
+            return 'D'
+
     def _read_disc_record(self, offset):
     
         """Reads the disc record for D and E format disc images and returns a
@@ -1181,7 +1199,8 @@ class ADFSdisc(Utilities):
         # BootOpt
         # Zones
         zones = self.sectors[offset + 9]
-        # ZoneSpare
+        # ZoneSpare (bits per zone)
+        zone_spare = self._read_unsigned_half_word(self.sectors[offset + 10 : offset + 12])
         # RootDir
         root = self._str2num(3, self.sectors[offset + 13 : offset + 16]) # was 15
         # Identify
@@ -1198,7 +1217,8 @@ class ADFSdisc(Utilities):
             'sector size': 2**log2_sector_size, 'heads': heads,
             'density': density,
             'disc size': disc_size, 'disc ID': disc_id,
-            'disc name': disc_name, 'zones': zones, 'root dir': root }
+            'disc name': disc_name, 'zones': zones, 'root dir': root,
+            'zone spare': zone_spare, 'bytes per bit': bytes_per_bit }
     
     def _read_disc_info(self):
     
@@ -1274,13 +1294,17 @@ class ADFSdisc(Utilities):
                 print('Less than %i tracks found.' % self.ntracks)
                 raise ADFS_exception('Less than %i tracks found.' % self.ntracks)
 
-        # A truncated image yields a short buffer here; the catalogue parser
-        # below would otherwise fail with IndexError instead of
-        # ADFS_exception.
+        # A truncated image yields a short buffer here. Absent tail sectors read 
+        # as not-found, so zero-pad rather than aborting, and the catalogue reader
+        # walks only the data that is present.
         expected = self.ntracks * self.nsectors * self.sector_size
         if len(t) < expected:
-            raise ADFS_exception(
-                'Disc image too short: %i bytes, expected %i' % (len(t), expected))
+            if self.verify:
+                self.verify_log.append(
+                    (WARNING,
+                     'Disc image too short: %i bytes, expected %i; '
+                     'zero-padding tail' % (len(t), expected)))
+            t = t + b'\x00' * (expected - len(t))
 
         return t
 
@@ -1319,9 +1343,14 @@ class ADFSdisc(Utilities):
                     top_set = counter
                 counter = counter + 1
 
-            # Old-format ADFS encodes the object attributes in the top bit
-            # of the name characters, so strip bit 7 to recover the name.
-            name_bytes = bytes(b & 0x7f for b in old_name)
+            # S/M/L Old directories encode the object attributes in the top
+            # bit of the name characters, so strip bit 7 to recover the name.
+            # D format pairs an Old map with a New directory, whose names
+            # legitimately contain characters > 127, so those are kept as-is.
+            if self.disc_type == 'adD':
+                name_bytes = old_name
+            else:
+                name_bytes = bytes(b & 0x7f for b in old_name)
             name = self._safe(name_bytes)
 
             load = self._read_unsigned_word(self.sectors[head+p+10:head+p+14])

@@ -11,6 +11,9 @@ from riscosconv.ro_file_meta import RiscOsFileMeta
 # An S-format ADFS disc is 40 tracks x 16 sectors x 256 bytes.
 ADF_S_SIZE = 40 * 16 * 256
 
+# An F-format ADFS disc is 80 tracks x 20 sectors x 1024 bytes.
+ADF_F_SIZE = 80 * 20 * 1024
+
 
 # -- Joliet test-image writer -------------------------------------------------
 # A RISC OS disc mastered for both trees stores the RISC OS name in the plain
@@ -148,6 +151,105 @@ def build_adf(entries=None) -> bytes:
     img[tail + 256 - 42: tail + 256 - 39] = (2).to_bytes(3, 'little')  # parent
     img[tail + 256 - 39: tail + 256 - 20] = b'Test Disc' + b'\0' * 10   # title
     img[tail + 256 - 6] = 1           # endseq == dir_seq
+    return bytes(img)
+
+
+def build_adf_d(entries=None) -> bytes:
+    """Build a minimal valid D-format (800K) ADFS disc image.
+
+    D format pairs an Old map with a New directory: unlike the S/M/L Old
+    directories, New directory names legitimately contain characters > 127
+    (the top bit is not an attribute marker), so a name byte like 0xBD must be
+    read back as ``\\xbd`` (a '½') rather than '=' with an attribute set.
+
+    The root catalogue lives at offset 0x400: a dir_seq byte, a "Hugo" marker,
+    one 26-byte entry per object, a terminator, and a tail whose dir_end
+    marker ends the directory. ``entries`` is an optional list of
+    ``(name_bytes, load, exe, length, sector, atts)`` tuples.
+    """
+    SEC = 1024
+    img = bytearray(80 * 10 * SEC)
+    img[0x400] = 1                       # dir_seq
+    img[0x401:0x405] = b'Hugo'           # root directory marker
+    if entries is None:
+        entries = [(b'!Draw1\xbd', 0x1000, 0x2000, 4, 100, 0)]
+    p = 0x405
+    for name, load, exe, length, sector, atts in entries:
+        assert len(name) <= 10
+        img[p:p + 10] = name.ljust(10, b'\0')
+        img[p + 10: p + 14] = load.to_bytes(4, 'little')
+        img[p + 14: p + 18] = exe.to_bytes(4, 'little')
+        img[p + 18: p + 22] = length.to_bytes(4, 'little')
+        img[p + 22: p + 25] = sector.to_bytes(3, 'little')
+        img[p + 25] = atts
+        p += 26
+    img[p] = 0                        # end of catalogue
+    tail = 0x400 + SEC
+    img[tail + SEC - 16: tail + SEC - 6] = b'Root' + b'\0' * 6  # dir_name
+    img[tail + SEC - 38: tail + SEC - 35] = (4).to_bytes(3, 'little')  # parent == head
+    img[tail + SEC - 35: tail + SEC - 16] = b'Test Disc' + b'\0' * 8  # title
+    img[tail + SEC - 6] = 1           # endseq == dir_seq
+    img[tail + SEC - 5: tail + SEC - 1] = b'Hugo'  # dir_end marker
+    return bytes(img)
+
+
+def build_adf_big(file_no=0x1A2, name=b'BIGFILE') -> bytes:
+    """Build a minimal valid F-format (1.6MB) ADFS disc image.
+
+    F-format splits the map into one zone per sector.  A single file's two
+    fragments are deliberately placed in different zones (zone 0 and zone 3)
+    with a file number whose top 7 bits match neither zone, so that a map
+    reader deriving the zone from the file number (the pre-fix behaviour)
+    computes wrong fragment addresses.  The file data is then
+    ``bytes(i % 256 for i in range(6144))`` split across the two fragments:
+    3584 bytes at disc offset 0 and 2560 bytes at offset 0x12D800.
+    """
+    img = bytearray(ADF_F_SIZE)
+
+    # Disc record at 0xC6804.
+    rec = 0xC6804
+    img[rec] = 10                  # log2 sector size
+    img[rec + 1] = 10              # sectors per track (record field)
+    img[rec + 2] = 2               # heads
+    img[rec + 3] = 4               # density (ignored for sector size)
+    img[rec + 4] = 15              # idlen
+    img[rec + 5] = 6               # log2 bytes-per-bit -> 64
+    img[rec + 9] = 4               # zones
+    img[rec + 10:rec + 12] = (1600).to_bytes(2, 'little')  # zone spare (bits)
+    img[rec + 13:rec + 16] = (2).to_bytes(3, 'little')     # root dir field
+    img[rec + 16:rec + 20] = (ADF_F_SIZE).to_bytes(4, 'little')  # disc size
+    img[rec + 22:rec + 32] = b'SynthBig'.ljust(10, b'\0')  # disc name
+
+    # Map region 0xC6800..0xC7800.  Each zone is one 1024-byte sector with a
+    # 4-byte header; the walker reads a fragment as a 2-byte word, a run of
+    # zero bytes, then a 0x80 terminator.  The file's fragments stay on the
+    # walker's read alignment by placing them right after a zone header.
+    # Fragment 1 word in zone 0 at 0xC6840: address (0 - 0*200) * 512 = 0.
+    word = file_no.to_bytes(2, 'little')
+    img[0xC6840:0xC6842] = word
+    img[0xC6846] = 0x80            # terminator -> fragment spans 0..3584
+    img[0:3584] = bytes(i % 256 for i in range(3584))
+    # Fragment 2 word at zone 3's first map slot (0xC7404): address
+    # ((0xC7404 - 0xC6840) - 3*200) * 512 = 1234944.
+    img[0xC7404:0xC7406] = word
+    img[0xC7408] = 0x80            # terminator -> fragment spans 1234944..1237504
+    img[1234944:1237504] = bytes(i % 256 for i in range(3584, 3584 + 2560))
+
+    # Root directory at 0xC8800 (derived from the 80x20 geometry).
+    root = (80 * 20 // 2 + 2) * 1024
+    img[root] = 1                  # dir_seq
+    img[root + 1:root + 5] = b'Nick'
+    p = 5
+    img[root + p:root + p + 10] = name.ljust(10, b'\0')
+    img[root + p + 10:root + p + 14] = (0x1000).to_bytes(4, 'little')  # load
+    img[root + p + 14:root + p + 18] = (0x2000).to_bytes(4, 'little')  # exe
+    img[root + p + 18:root + p + 22] = (6144).to_bytes(4, 'little')    # length
+    # SIN: file number in the top 16 bits, sector offset + 1 in the bottom 8.
+    img[root + p + 22:root + p + 25] = b'\x01' + file_no.to_bytes(2, 'little')
+    img[root + p + 25] = 0         # atts
+    tail = root + 1024
+    img[tail + 1024 - 6] = 1                           # endseq == dir_seq
+    img[tail + 1024 - 5:tail + 1024 - 1] = b'Nick'     # dir_end marker
     return bytes(img)
 
 

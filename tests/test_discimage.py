@@ -1,11 +1,12 @@
 import io
 
 import pytest
-from helpers import build_adf
+from helpers import build_adf, build_adf_big, build_adf_d
 
 from riscosconv.adfs_disc import RiscOsAdfsDisc
 from riscosconv.adfslib import ADFSdirectory, ADFSdisc, ADFSfile
-from riscosconv.indentify import KnownFileType, identify_discimage
+from riscosconv.indentify import (KnownFileType, identify_discimage,
+                                  identify_file)
 from riscosconv.riscos_path import PureRiscOsPath
 
 
@@ -48,8 +49,13 @@ class TestDiscImages:
         assert identify_discimage('x.txt', fd) == KnownFileType.UNKNOWN
         assert not fd.closed
 
-
-class TestOldFormatNameHighBits:
+    def test_truncated_800k_adf_is_disc_image(self, adf_bytes):
+        # arculator (disc.c) loads any .adf up to 1638400 bytes in the
+        # 800K/1.6M size bucket regardless of truncation, so preserved
+        # dumps with trailing sectors stripped (e.g. 814080 = 819200-5*1024)
+        # must still be recognised.
+        stripped = adf_bytes[:len(adf_bytes) - 5 * 1024]
+        assert identify_file('broken.adf', io.BytesIO(stripped)) == KnownFileType.DISC_IMAGE
     """Old-format ADFS encodes object attributes in the top bits of the
     10 name characters (bit 0=R, 1=W, 2=L, 3=D, 4=E, 5=r, 6=w, 7=e, 8=P).
     The name must have bit 7 stripped so it reads as plain text.
@@ -139,3 +145,82 @@ class TestOldFormatNameHighBits:
         disc = RiscOsAdfsDisc(io.BytesIO(build_adf(entries)))
         paths = sorted(p for p, _ in disc.list())
         assert paths == [PureRiscOsPath('INDEX/HTM'), PureRiscOsPath('PHOTO/GIF')]
+
+    def test_truncated_image_lists_present_files(self):
+        # A discarded ADF dump with trailing sectors stripped (arculator
+        # mounts it as the geometry implied by size) must list what the
+        # remaining catalogue describes instead of raising "too short".
+        img = build_adf([(b'Test', 0, 0, 1, 100, 0)])
+        disc = RiscOsAdfsDisc(io.BytesIO(img[:len(img) - 5 * 256]))
+        paths = [p for p, _ in disc.list()]
+        assert paths == [PureRiscOsPath('Test')]
+
+    def test_heavy_truncation_still_lists(self):
+        img = build_adf([(b'Test', 0, 0, 1, 100, 0)])
+        disc = RiscOsAdfsDisc(io.BytesIO(img[:100000]))
+        assert [p for p, _ in disc.list()] == [PureRiscOsPath('Test')]
+
+    def test_big_disc_multi_zone_fragment_addresses(self):
+        # Regression: find_address_from_map derived the map zone from the
+        # file number's top bits, so a file split across zones (0x1A2 here,
+        # whose top-7-bit zone is 1) computed the wrong fragment address for
+        # every zone.  Fragments must land at (0, 3584) in zone 0 and
+        # (1234944, 1237504) in zone 3.
+        disc = RiscOsAdfsDisc(io.BytesIO(build_adf_big()))
+        assert disc.disc.disc_map[0x1A2] == [(0, 3584), (1234944, 1237504)]
+
+    def test_big_disc_multi_zone_file_opens(self):
+        disc = RiscOsAdfsDisc(io.BytesIO(build_adf_big()))
+        assert [p for p, _ in disc.list()] == [PureRiscOsPath('BIGFILE')]
+        with disc.open('BIGFILE') as f:
+            assert f.read() == bytes(i % 256 for i in range(6144))
+
+    def test_d_format_keeps_high_bit_name_char(self):
+        # Regression: D format pairs an Old map with a New directory, whose
+        # names hold real characters > 127.  Byte 0xBD (a '½') must read back
+        # as '½', not be stripped to '=' as S/M/L Old-directory attribute bits.
+        disc = RiscOsAdfsDisc(io.BytesIO(build_adf_d()))
+        assert disc.disc.disc_type == 'adD'
+        assert disc.disc.files[0].name == '!Draw1\u00bd'
+        assert [p for p, _ in disc.list()] == [PureRiscOsPath('!Draw1\u00bd')]
+
+    def test_s_format_still_strips_high_bit_name(self):
+        # The S/M/L Old-directory attribute encoding must keep stripping the
+        # top bit: '!Boot' with R+W set (\xa1\xc2...) reads back as '!Boot'.
+        disc = RiscOsAdfsDisc(io.BytesIO(
+            build_adf([(b'\xa1\xc2oot', 0x1000, 0x1000, 4, 100, 0)])))
+        assert disc.disc.disc_type == 'ads'
+        assert disc.disc.files[0].name == '!Boot'
+
+    def test_erased_800k_image_has_empty_catalogue(self):
+        # A full-size 800K image wiped to a fill pattern has no catalogue
+        # markers and no readable disc record; it must parse to an empty
+        # catalogue rather than rejecting the disc outright.
+        disc = RiscOsAdfsDisc(io.BytesIO(b'\xa5' * 819200))
+        assert disc.disc_name == 'Untitled'
+        assert list(disc.list()) == []
+
+    def test_erased_800k_image_still_identifies(self):
+        assert identify_discimage('erased.adf',
+                                  io.BytesIO(b'\xa5' * 819200)) \
+            == KnownFileType.DISC_IMAGE
+
+    def test_truncated_d_image_classified_as_d(self):
+        # A full 800K D disc truncated into the L size bucket (e.g. the
+        # Talisman and Starch ADFs, preserved dumps with trailing sectors
+        # stripped) must still be read as D format.  arculator mounts any
+        # .adf up to 819200 bytes at the 800K D geometry, so the root
+        # catalogue marker at 0x400 wins over the length-based L guess.
+        img = build_adf_d()[:400000]
+        disc = ADFSdisc(io.BytesIO(img))
+        assert disc.disc_type == 'adD'
+        assert disc.files[0].name == '!Draw1\u00bd'
+        assert isinstance(disc.files[0], ADFSfile)
+
+    def test_truncated_image_without_d_marker_stays_l(self):
+        # Only the D root marker at 0x400 rescues a truncated image from the
+        # L bucket; a 640K-range image without it stays L format.
+        img = build_adf_d()[:400000]
+        img = img[:0x401] + b'\x00' * 4 + img[0x405:]
+        disc = ADFSdisc(io.BytesIO(img))
+        assert disc.disc_type == 'adl'
