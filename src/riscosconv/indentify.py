@@ -98,6 +98,12 @@ def identify_discimage(filename: str, fd):
         disc = ADFSdisc(fd)
     except ADFS_exception:
         pass
+    except (ValueError, OverflowError):
+        # A bad disc record in _identify_format can overflow (e.g. a
+        # nonsense root-dir offset in a full-size 819200-byte image); the
+        # image is still a raw ADFS sector dump, so fall through to the
+        # extension/size check below.
+        pass
     else:
         # The old ADFS formats (<800K) don't validate the root catalog in the
         # constructor, so arbitrary byte blobs of the right length could pass.
@@ -108,13 +114,27 @@ def identify_discimage(filename: str, fd):
 
     if fd.read(8) == b'HXCPICFE':  # HFE disc image signature
         return KnownFileType.DISC_IMAGE
+
+    # Fall back to arculator's loading rule (disc.c): a raw-sector image
+    # named with a disc extension is treated as a floppy of the geometry
+    # implied by its size, so truncated/irregular images (e.g. 814080-byte
+    # 800K ADFs with trailing sectors stripped) are still scannable. The
+    # size cap is arculator's largest ADF loader bucket (2*80*10*1024).
+    # Gating on the extension prevents loading arbitrary blobs.
+    if has_disc_image_ext(filename):
+        fd.seek(0, os.SEEK_END)
+        if fd.tell() <= 1638400:
+            return KnownFileType.DISC_IMAGE
     return KnownFileType.UNKNOWN
 
 
 def identify_file(filename: str, fd) -> KnownFileType:
     if filename.endswith(',ff9'):
         return KnownFileType.RISC_OS_SPRITES
-    
+
+    if has_disc_image_ext(filename):
+        return identify_discimage(filename, fd)
+
     if is_zipfile(fd):
         zipfile = ZipFile(fd)
         return identify_zipfile(zipfile)
