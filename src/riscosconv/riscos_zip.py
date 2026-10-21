@@ -11,6 +11,7 @@ from .ro_file_meta import (
 )
 from .riscos_path import PureRiscOsPath, as_ro_path
 from .zip_implode import setup_zip_implode
+from .zip_shrink import setup_zip_shrink
 
 ZIP_EXT_ACORN = 0x4341    # 'AC' - SparkFS / Acorn
 ZIP_ID_ARC0 = 0x30435241  # 'ARC0'

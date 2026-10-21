@@ -1,9 +1,12 @@
 import zipfile
 
+from .zip_codec import register
+
 # ZIP compression method 6 (Implode). Python's zipfile does not support it,
-# so we implement a decompressor and monkey-patch zipfile to use it. The
-# algorithm is a port of the Explode decoder from Jason Summers' "hwzip"
-# series (Shrink, Reduce, and Implode -- The Legacy Zip Compression Methods).
+# so the decompressor is registered with zip_codec, which monkey-patches
+# zipfile to use it. The algorithm is a port of the Explode decoder from Jason
+# Summers' "hwzip" series (Shrink, Reduce, and Implode -- The Legacy Zip
+# Compression Methods).
 ZIP_IMPLODE = 6
 
 IMP_MAX_HUFFMAN_BITS = 16
@@ -259,58 +262,6 @@ def _explode(src, uncomp_len, large_wnd, lit_tree):
     return bytes(dst)
 
 
-def setup_zip_implode():
-    """Monkey-patch zipfile to support method 6 (Implode) decompression."""
-    zipfile.ZIP_IMPLODE = ZIP_IMPLODE
-
-    _orig_check = zipfile._check_compression
-
-    def _check(compression):
-        if compression == ZIP_IMPLODE:
-            return
-        return _orig_check(compression)
-
-    zipfile._check_compression = _check
-
-    _orig_get_decomp = zipfile._get_decompressor
-
-    def _get_decomp(compress_type):
-        if compress_type == ZIP_IMPLODE:
-            return _ImplodeDecompressor()
-        return _orig_get_decomp(compress_type)
-
-    zipfile._get_decompressor = _get_decomp
-
-    # The decompressor needs the member's flag_bits (window size / tree
-    # selection), compress_size and file_size, which _get_decompressor does
-    # not pass. Attach them after ZipExtFile is constructed.
-    _orig_ext_init = zipfile.ZipExtFile.__init__
-
-    def _ext_init(self, fileobj, mode, zipinfo, pwd=None, close_fileobj=False):
-        _orig_ext_init(self, fileobj, mode, zipinfo, pwd=pwd,
-                       close_fileobj=close_fileobj)
-        if self._compress_type == ZIP_IMPLODE:
-            self._implode_flag_bits = zipinfo.flag_bits
-            self._decompressor.set_info(zipinfo.flag_bits,
-                                        zipinfo.compress_size,
-                                        zipinfo.file_size)
-
-    zipfile.ZipExtFile.__init__ = _ext_init
-
-    _orig_ext_seek = zipfile.ZipExtFile.seek
-
-    def _ext_seek(self, offset, whence=0):
-        result = _orig_ext_seek(self, offset, whence)
-        if self._compress_type == ZIP_IMPLODE:
-            # seek() recreates the decompressor; re-attach the member info.
-            self._decompressor.set_info(getattr(self, '_implode_flag_bits', 0),
-                                        self._orig_compress_size,
-                                        self._orig_file_size)
-        return result
-
-    zipfile.ZipExtFile.seek = _ext_seek
-
-
 class _ImplodeDecompressor:
     """zipfile-compatible decompressor for method 6.
 
@@ -351,4 +302,4 @@ class _ImplodeDecompressor:
         return self._out
 
 
-setup_zip_implode()
+register(ZIP_IMPLODE, 'ZIP_IMPLODE', _ImplodeDecompressor)
