@@ -181,6 +181,8 @@ def convert_disc_to_zip(disc: DiscImageBase, zip_path, extract_paths: list[str] 
             continue
 
         ds = file_meta.timestamp
+        # DOS timestamps in a zip can't go before 1980 (e.g. RISC OS timestamp 0)
+        ds = max(ds, datetime(1980, 1, 1))
 
         date_time = ds.year, ds.month, ds.day, ds.hour, ds.minute, ds.second
         zipinfo = ZipInfo(path.as_zipname(), date_time)

@@ -73,3 +73,16 @@ def test_convert_filter_matches_component_boundaries(tmp_path):
 
     with ZipFile(tmp_path / 'out.zip') as zf:
         assert sorted(zf.namelist()) == ['Draw/thing']
+
+
+def test_convert_to_zip_clamps_pre_1980_timestamp(tmp_path):
+    # ZIP (DOS) timestamps have a 1980 floor; a RISC OS datestamp of 0
+    # (1900-01-01) must be clamped rather than crash convert_disc_to_zip.
+    archive = ArcFSArchive(BytesIO(build_arcfs([
+        ArcFSFile('Old', b'data', timestamp=datetime(1900, 1, 1)),
+    ])))
+    convert_disc_to_zip(archive, str(tmp_path / 'out.zip'), [])
+
+    with ZipFile(tmp_path / 'out.zip') as zf:
+        assert zf.infolist()[0].date_time >= (1980, 1, 1, 0, 0, 0)
+        assert zf.read('Old') == b'data'
