@@ -12,8 +12,9 @@ import pytest
 
 from riscosconv.arcfs import (
     AFS_COMPRESS, AFS_CRUNCH, AFS_PACK, AFS_SQUASH, AFS_STORE,
-    ArcFSArchive, ArcFSError, arc_crc16, uncompress_lzw, unpack_rle,
+    ArcFSArchive,
 )
+from riscosconv.codec import CodecError, arc_crc16, uncompress_lzw, unpack_rle
 from riscosconv.cli import KnownFileType, extract_riscos_disc, identify_file, load_disc
 from riscosconv.riscos_path import PureRiscOsPath
 from riscosconv.riscos_zip import RiscOsZip, convert_disc_to_zip
@@ -95,7 +96,7 @@ def test_lzw_kwkwk():
 
 @pytest.mark.parametrize('maxbits', [0, 8, 17])
 def test_lzw_invalid_maxbits(maxbits):
-    with pytest.raises(ArcFSError, match='max bits'):
+    with pytest.raises(CodecError, match='max bits'):
         uncompress_lzw(b'\x00\x00', maxbits)
 
 
@@ -272,7 +273,7 @@ def test_reads_from_current_position():
 
 def test_crc_mismatch():
     archive = open_archive(build_arcfs([ArcFSFile('File', b'hello', crc=0x1234)]))
-    with pytest.raises(ArcFSError, match='CRC'):
+    with pytest.raises(CodecError, match='CRC'):
         archive.read('File')
 
 
@@ -285,7 +286,7 @@ def test_decompressed_too_short():
     archive = open_archive(build_arcfs([
         ArcFSFile('File', b'hello world', comp_data=compress_lzw(b'hello', 12)),
     ]))
-    with pytest.raises(ArcFSError, match='expected 11 bytes'):
+    with pytest.raises(CodecError, match='expected 11 bytes'):
         archive.read('File')
 
 
@@ -302,35 +303,35 @@ def test_decompressed_output_truncated_to_length():
 def test_compressed_data_truncated():
     data = build_arcfs([ArcFSFile('File', text_data(1000))])
     archive = open_archive(data[:-10])
-    with pytest.raises(ArcFSError, match='truncated'):
+    with pytest.raises(CodecError, match='truncated'):
         archive.read('File')
 
 
 def test_truncated_header():
     data = build_arcfs([ArcFSFile('A', b'a'), ArcFSFile('B', b'b')])
-    with pytest.raises(ArcFSError, match='truncated ArcFS header'):
+    with pytest.raises(CodecError, match='truncated ArcFS header'):
         open_archive(data[:96 + 36 + 10])
 
 
 def test_bad_magic():
     data = bytearray(build_arcfs([]))
     data[0:8] = b'Archiv\x00\x00'
-    with pytest.raises(ArcFSError, match='not an ArcFS archive'):
+    with pytest.raises(CodecError, match='not an ArcFS archive'):
         open_archive(bytes(data))
 
 
 def test_too_short():
-    with pytest.raises(ArcFSError, match='not an ArcFS archive'):
+    with pytest.raises(CodecError, match='not an ArcFS archive'):
         open_archive(b'Archive\x00')
 
 
 def test_newer_version():
-    with pytest.raises(ArcFSError, match=r'newer version of ArcFS \(0.41\)'):
+    with pytest.raises(CodecError, match=r'newer version of ArcFS \(0.41\)'):
         open_archive(build_arcfs([], version=41))
 
 
 def test_unknown_format():
-    with pytest.raises(ArcFSError, match='format 1 not understood'):
+    with pytest.raises(CodecError, match='format 1 not understood'):
         open_archive(build_arcfs([], fmt=1))
 
 
@@ -340,7 +341,7 @@ def test_unsupported_method():
     data = bytearray(archive.data)
     data[96] = 0x84
     archive = open_archive(bytes(data))
-    with pytest.raises(ArcFSError, match='unsupported compression method 0x84'):
+    with pytest.raises(CodecError, match='unsupported compression method 0x84'):
         archive.read('File')
 
 

@@ -4,7 +4,7 @@ Native reader for Spark archives.
 Based on the Spark support in nspark (unarc.c, io.c, compress.c, pack.c,
 store.c, crc.c, date.c) by Andrew Brooks, David Duplain et al. Spark is a
 variant of the PC ARC format. The compression methods and CRC are shared with
-ArcFS, so the codecs live in riscosconv.arcfs.
+ArcFS, so the codecs live in riscosconv.codec.
 
 An archive is a sequence of entries, each a 0x1a marker byte, a header and
 then the (compressed) file data. All words are little-endian:
@@ -37,7 +37,7 @@ import os
 import struct
 from typing import IO, Generator, Optional, Tuple
 
-from .arcfs import ArcFSError, arc_crc16, uncompress_lzw, unpack_rle, SQUASH_BITS
+from .codec import CodecError, SQUASH_BITS, arc_crc16, unpack_rle, uncompress_lzw
 from .ro_file_meta import RISC_OS_EPOCH, DiscImageBase, FileMeta, RiscOsFileMeta
 from .riscos_path import PureRiscOsPath, as_ro_path
 
@@ -129,13 +129,22 @@ class SparkArchive(DiscImageBase):
         return name.replace(':', '_').replace('.', '_')
 
     def _parse(self):
-        data = self.data
-        end = len(data)
-        pos = 0
-        dir_stack = []
+        out, _ = self._walk(0, len(self.data), None, (), True)
+        self.entries = dict(out or [])
 
-        # like nspark, a clean EOF ends the archive even without an end marker
-        while pos < end:
+    def _walk(self, pos, end, dir_end, prefix, root):
+        """Parse a run of sibling entries starting at pos.
+
+        dir_end is the declared end (data_offset + complen) of the enclosing
+        directory, or None for the top level: a directory's contents stop
+        there, and like nspark a clean EOF also ends a level.  Returns
+        (entries, next_pos).  Raises SparkError if the level is malformed; a
+        directory descent that fails this way is retried by the caller as a
+        plain file.
+        """
+        data = self.data
+        out = []
+        while pos < end and (dir_end is None or pos < dir_end):
             if data[pos] != STARTBYTE:
                 raise SparkError(f'bad archive header at offset {pos}')
             if pos + 2 > end:
@@ -145,10 +154,16 @@ class SparkArchive(DiscImageBase):
 
             if method == 0:
                 pos += 2
-                if not dir_stack:
-                    break
-                dir_stack.pop()
-                continue
+                # the declared dir length need not end at the end marker, so
+                # resync to the next real entry; the declared end caps how far
+                # the search may go
+                if dir_end is not None and pos < dir_end:
+                    limit = min(dir_end, end)
+                    while pos < limit and data[pos] != STARTBYTE:
+                        pos += 1
+                    if pos >= limit:
+                        pos = min(dir_end, end)
+                return out, pos
 
             header_len = BASE_HEADER_LEN
             if method > CT_NOTCOMP:
@@ -176,19 +191,36 @@ class SparkArchive(DiscImageBase):
                 raise SparkError(f'empty file name at offset {pos}')
 
             data_offset = pos + header_len
+            path = PureRiscOsPath(*prefix, name)
 
-            # A stored &DDC entry is a directory. Its length covers the entries
-            # inside it, which are parsed as the next entries rather than skipped.
+            # A stored &DDC entry is a directory: its length covers the entries
+            # inside it, which are parsed as the next entries rather than
+            # skipped.  Spark uses filetype &DDC for both a genuine directory
+            # and a nested ArcFS archive stored as a single blob, so only
+            # descend when the data really begins with entry markers.  If the
+            # descent fails the content is not a genuine directory, so expose
+            # the whole thing as a single &DDC file instead (nspark reports
+            # this as an unidentified header type).
             if method == CT_NOTCOMP2 and load is not None \
-                    and load & DIR_LOAD_MASK == DIR_LOAD_VALUE:
-                dir_stack.append(name)
-                pos = data_offset
-                continue
-
-            pos = data_offset + complen
-            path = PureRiscOsPath(*dir_stack, name)
-            self.entries[path] = SparkEntry(path, method, date, time, crc, length, complen,
-                                            data_offset, load, exec_, attr)
+                    and load & DIR_LOAD_MASK == DIR_LOAD_VALUE \
+                    and data[data_offset:data_offset + 1] == bytes((STARTBYTE,)):
+                try:
+                    sub, sub_end = self._walk(data_offset, end,
+                                              data_offset + complen,
+                                              prefix + (name,), False)
+                    out.extend(sub)
+                    pos = sub_end
+                except SparkError:
+                    out.append((path, SparkEntry(path, method, date, time, crc,
+                                                 length, complen, data_offset,
+                                                 load, exec_, attr)))
+                    pos = data_offset + complen
+            else:
+                out.append((path, SparkEntry(path, method, date, time, crc,
+                                             length, complen, data_offset,
+                                             load, exec_, attr)))
+                pos = data_offset + complen
+        return out, pos
 
     def _file_meta(self, entry: SparkEntry) -> FileMeta:
         if entry.load_addr is None:
@@ -233,7 +265,7 @@ class SparkArchive(DiscImageBase):
                     out = b''
             else:
                 raise SparkError(f'{path}: unsupported compression method {method}')
-        except ArcFSError as e:
+        except CodecError as e:
             raise SparkError(f'{path}: {e}') from e
 
         out = out[:entry.length]

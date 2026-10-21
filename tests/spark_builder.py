@@ -3,7 +3,7 @@ Helpers to generate Spark archives for tests.
 
 The compression encoders are shared with arcfs_builder (ports of nspark's
 pack.c and classic Unix compress), written independently of the decoders in
-riscosconv.arcfs so the tests exercise real round trips.
+riscosconv.codec so the tests exercise real round trips.
 """
 
 from dataclasses import dataclass, field
@@ -11,7 +11,7 @@ from datetime import datetime
 import struct
 from typing import Optional, Union
 
-from riscosconv.arcfs import arc_crc16, SQUASH_BITS
+from riscosconv.codec import SQUASH_BITS, arc_crc16
 from riscosconv.ro_file_meta import make_load_exec
 from riscosconv.spark import (
     ARCHPACK, CT_COMP, CT_CRUNCH, CT_NOTCOMP, CT_NOTCOMP2, CT_PACK, CT_SQUASH, STARTBYTE,

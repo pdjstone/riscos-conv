@@ -1,8 +1,8 @@
 """Guard the zip_implode monkey-patch against being silently dropped.
 
 `riscos_zip` imports `zip_implode` purely for its side effect -- importing it
-runs `setup_zip_implode()`, which monkey-patches `zipfile` with a decompressor
-for the Implode method (ZIP method 6). Because the imported name is never
+registers the Implode decompressor with `zip_codec`, which monkey-patches
+`zipfile` to use it (ZIP method 6). Because the imported name is never
 referenced, a linter or a well-meaning import cleanup can delete that line and
 nothing else in the suite notices: no other test builds an Implode-compressed
 archive.

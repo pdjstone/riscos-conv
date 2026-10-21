@@ -13,8 +13,9 @@ from typing import Optional, Union
 
 from riscosconv.arcfs import (
     AFS_COMPRESS, AFS_CRUNCH, AFS_DELETED, AFS_ENDDIR, AFS_PACK, AFS_SQUASH, AFS_STORE,
-    ARCFS_MAGIC, ENTRY_LEN, MAIN_HEADER_LEN, SQUASH_BITS, arc_crc16,
+    ARCFS_MAGIC, ENTRY_LEN, MAIN_HEADER_LEN,
 )
+from riscosconv.codec import SQUASH_BITS, arc_crc16
 from riscosconv.ro_file_meta import RISC_OS_EPOCH, make_load_exec
 
 

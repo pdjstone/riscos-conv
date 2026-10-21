@@ -161,6 +161,24 @@ def test_empty_directories_not_listed():
     assert list(archive.entries) == [PureRiscOsPath('Dir.File')]
 
 
+def test_arcfs_blob_marked_as_dir_is_a_file():
+    # Spark uses filetype &DDC both for a genuine directory and for a nested
+    # ArcFS archive stored as a single blob.  A dir-marked entry whose data
+    # does not start with the 0x1a entry marker must be treated as a plain
+    # file (Killer's CompDisc/Documents/AVRD), not descended into.
+    arcfs = b'Archive\x00' + bytes(range(256)) * 4
+    archive = open_archive(build_spark([
+        SparkDir('Docs', [
+            SparkFile('AVRD', arcfs, filetype=0xddc, method=CT_NOTCOMP2),
+            SparkFile('ReadMe', b'hi'),
+        ]),
+    ]))
+    assert list(archive.entries) == [PureRiscOsPath('Docs.AVRD'),
+                                     PureRiscOsPath('Docs.ReadMe')]
+    assert archive.read('Docs.AVRD') == arcfs
+    assert archive.read('Docs.ReadMe') == b'hi'
+
+
 def test_empty_archive():
     archive = open_archive(build_spark([]))
     assert list(archive.list()) == []
