@@ -1,9 +1,8 @@
 import os
 from pathlib import Path
-from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
+from zipfile import ZipFile
 
-from .riscos_zip import get_riscos_zipinfo, zip_extra
-from .ro_file_meta import DiscImageBase
+from .riscos_zip import get_riscos_zipinfo
 
 
 def add_file_to_zip(zipfile: ZipFile, filepath: Path, base_path: Path):

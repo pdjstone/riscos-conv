@@ -10,6 +10,7 @@ requires-python = ">=3.13"
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Operating System :: OS Independent",
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
   "Environment :: Console",
@@ -35,8 +36,16 @@ build-backend = "setuptools.build_meta"
 
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = ["pytest", "pytest-cov"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "tests"]
+
+[tool.ruff]
+# Vendored third-party code -- kept as close to upstream as possible.
+extend-exclude = ["src/riscosconv/adfslib.py"]
+
+[tool.ruff.lint]
+# Explicit so a ruff upgrade can't change what is checked.
+select = ["E9", "F"]
